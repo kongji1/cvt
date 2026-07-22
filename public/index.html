@@ -78,6 +78,7 @@
 
     .tool-nav {
       display: inline-flex;
+      flex-wrap: wrap;
       gap: 4px;
       margin-bottom: 18px;
       padding: 4px;
@@ -760,6 +761,11 @@
       font-size: 13px;
     }
 
+    .format-note a {
+      color: var(--accent-ink);
+      font-weight: 700;
+    }
+
     .toast {
       position: fixed;
       right: 22px;
@@ -867,15 +873,15 @@
 <body>
   <main class="shell">
     <nav class="tool-nav" aria-label="转换器导航">
-      <a class="active" href="/" aria-current="page">CPA / sub2api</a>
-      <a href="/session/">ChatGPT Session</a>
+      <a class="active" href="/" aria-current="page">多供应商：CPA ↔ sub2api</a>
+      <a href="/session/">OpenAI / ChatGPT 格式互转</a>
     </nav>
 
     <header class="topbar">
       <div class="topbar-copy">
         <p class="eyebrow">CLIProxyAPI / sub2api</p>
         <h1>账号凭证格式转换台</h1>
-        <p class="summary">本页在浏览器本地解析和生成 JSON。默认流程是粘贴或选择 CLIProxyAPI auth 文件，导出可直接用于 sub2api 管理接口的导入包。</p>
+        <p class="summary">本页处理 CPA 与 sub2api 的多供应商 OAuth 凭证映射；ChatGPT Session、Codex、9router 等 OpenAI 专用格式则进入独立的统一凭证模型，不再把不同供应商硬转成同一种账号。</p>
       </div>
       <aside class="source-note" aria-label="源码版本">
         <div class="source-note-header">
@@ -1040,20 +1046,28 @@
 
     <section class="format-notes" aria-label="格式说明">
       <div class="format-note">
-        <strong>CPA 输入</strong>
-        <span>支持单个 auth JSON、数组、NDJSON 和多文件；`disabled=true` 的 CPA 账号会固定跳过。</span>
+        <strong>多供应商互转域</strong>
+        <span>Codex/OpenAI、Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA auth 与 sub2api OAuth account 之间双向映射。</span>
       </div>
       <div class="format-note">
-        <strong>sub2api 输出</strong>
-        <span>下载文件就是 sub2api 前端导入弹窗读取的 DataPayload：`type/version/exported_at/proxies/accounts`。</span>
+        <strong>OpenAI 专用互转域</strong>
+        <span>ChatGPT Web Session、CPA Codex、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 请使用<a href="/session/">OpenAI / ChatGPT 格式互转</a>。</span>
       </div>
       <div class="format-note">
-        <strong>只转账号</strong>
-        <span>两个方向都只转换账号凭证，不携带代理地址、用户名或密码；CPA -> sub2api 固定写入 `proxies: []`。OAuth 默认并发为 10，Grok 按最新版源码使用 1。</span>
+        <strong>Gemini 仅单向</strong>
+        <span>旧 CPA Gemini / gemini-cli 可迁移到 sub2api；最新版 CPA 已移除 Gemini auth 加载，因此 sub2api Gemini 不能反向生成有效 CPA 文件。</span>
       </div>
       <div class="format-note">
-        <strong>CPA 导出</strong>
-        <span>sub2api -> CPA 会生成 ZIP；解压后每个账号一个 CLIProxyAPI 原生 auth JSON。最新版 CPA 已移除 Gemini auth，反向遇到 Gemini 会明确跳过。</span>
+        <strong>不是所有账号都能反向</strong>
+        <span>sub2api API Key、Agent Identity 和其他非 OAuth 账号不能还原为 CPA auth；转换器会说明原因并跳过，不会输出私钥或伪造凭证。</span>
+      </div>
+      <div class="format-note">
+        <strong>容器与文件</strong>
+        <span>sub2api 输出是 `sub2api-data` v1；CPA 反向导出为 ZIP，每个账号一个原生 auth JSON。输入支持单个对象、数组、NDJSON、连续 JSON 和多文件。</span>
+      </div>
+      <div class="format-note">
+        <strong>不可逆字段</strong>
+        <span>两个方向只转换账号凭证，不携带代理地址、用户名或密码。缺失 token、JWT 签名、refresh_token 或私钥都不能由格式转换凭空恢复。</span>
       </div>
     </section>
   </main>

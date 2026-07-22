@@ -42,6 +42,7 @@
 
     .tool-nav {
       display: inline-flex;
+      flex-wrap: wrap;
       gap: 4px;
       margin-bottom: 18px;
       padding: 4px;
@@ -126,6 +127,40 @@
     .session-guide code {
       overflow-wrap: anywhere;
       color: var(--code);
+    }
+
+    .format-map {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    .format-card {
+      padding: 13px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.84);
+    }
+
+    .format-card strong,
+    .format-card span {
+      display: block;
+    }
+
+    .format-card strong {
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .format-card span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .format-card a {
+      color: var(--accent-strong);
+      font-weight: 700;
     }
 
     .session-actions {
@@ -284,6 +319,7 @@
 
     @media (max-width: 860px) {
       .grid { grid-template-columns: 1fr; }
+      .format-map { grid-template-columns: 1fr; }
       .status { grid-template-columns: 1fr; }
       textarea, pre { min-height: 380px; }
     }
@@ -292,19 +328,38 @@
 <body>
   <main>
     <nav class="tool-nav" aria-label="转换器导航">
-      <a href="/">CPA / sub2api</a>
-      <a class="active" href="/session/" aria-current="page">ChatGPT Session</a>
+      <a href="/">多供应商：CPA ↔ sub2api</a>
+      <a class="active" href="/session/" aria-current="page">OpenAI / ChatGPT 格式互转</a>
     </nav>
 
     <header>
-      <h1>ChatGPT JSON / Session 本地转换器</h1>
-      <p class="intro">单文件离线工具。支持 JSON、JSONL、ChatGPT Web session、Codex auth.json、9router OAuth 和 sub2api bundle；全部在浏览器本地转换，不上传内容。</p>
+      <h1>OpenAI / ChatGPT 凭证互转中心</h1>
+      <p class="intro">把 ChatGPT Web Session、CPA Codex、sub2api OpenAI OAuth、Codex、9router、Cockpit、AxonHub 和 Codex-Manager 解析到同一份 OpenAI 凭证模型，再从该模型生成目标格式。全部在浏览器本地完成。</p>
     </header>
 
-    <div class="usage-note">仅转换你有权使用的登录信息。Web session 通常没有 refresh_token，access_token 过期后不能自动刷新。</div>
+    <div class="usage-note">仅转换你有权使用的登录信息。Web Session 通常没有 refresh_token；id_token 是已签名 JWT，本工具只原样保留，绝不伪造或改写签名内容。</div>
+
+    <section class="format-map" aria-label="格式兼容关系">
+      <div class="format-card">
+        <strong>可进入同一互转域</strong>
+        <span>ChatGPT Web Session、CPA Codex、sub2api OpenAI OAuth、Codex auth.json、9router、Cockpit、AxonHub、Codex-Manager 和标准化 JSONL。</span>
+      </div>
+      <div class="format-card">
+        <strong>有条件转换</strong>
+        <span>缺 refresh_token 时只能使用现有 access_token；缺原始 id_token 时保持缺失，要求校验签名或强制刷新能力的消费者可能拒绝。</span>
+      </div>
+      <div class="format-card">
+        <strong>不属于本通道</strong>
+        <span>Anthropic、Gemini、Antigravity、Grok/XAI 不能转换成 ChatGPT 凭证；请使用<a href="/">多供应商 CPA ↔ sub2api 通道</a>。</span>
+      </div>
+      <div class="format-card">
+        <strong>无法凭空恢复</strong>
+        <span>代理配置、Agent Identity 私钥、缺失的 refresh_token 与 JWT 签名都不是格式转换能生成的数据。</span>
+      </div>
+    </section>
 
     <section class="session-guide" aria-labelledby="session-guide-title">
-      <h2 id="session-guide-title">从当前已登录的 ChatGPT 导入</h2>
+      <h2 id="session-guide-title">从当前已登录的 ChatGPT 导入 OpenAI 凭证</h2>
       <p>登录 ChatGPT 后，打开 <code>https://chatgpt.com/api/auth/session</code>，复制整段 JSON 再导入。</p>
       <div class="session-actions">
         <a href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer">打开 Session JSON</a>
@@ -333,10 +388,10 @@
         <div class="status" aria-live="polite">
           <div class="pill"><strong>识别</strong><span id="shape">等待输入</span></div>
           <div class="pill"><strong>记录数</strong><span id="count">0</span></div>
-          <div class="pill"><strong>回填 claims</strong><span id="backfilled">0</span></div>
+          <div class="pill"><strong>跳过</strong><span id="skipped">0</span></div>
         </div>
 
-        <textarea id="src" spellcheck="false" placeholder="粘贴 unified JSONL、Codex JSON / JSONL、ChatGPT Web session 或 sub2api bundle JSON..."></textarea>
+        <textarea id="src" spellcheck="false" placeholder="粘贴 ChatGPT Web Session、CPA Codex、CPA auths 清单、sub2api OpenAI bundle、Codex / 9router / Cockpit / AxonHub / Codex-Manager JSON..."></textarea>
       </section>
 
       <section class="panel">
@@ -361,12 +416,12 @@
         </div>
 
         <pre id="out">尚未生成</pre>
-        <div id="msg" class="message">CPA 多账号会下载 .tar，包内每个账号一个 JSON 文件。</div>
+        <div id="msg" class="message">CPA 多账号会下载 ZIP，包内每个账号一个原生 Codex auth JSON。</div>
       </section>
     </section>
 
     <div class="hint">
-      安全边界：这个文件不加载外部脚本，不请求接口；转换逻辑全部在当前 HTML 内执行。处理敏感 token 时，建议断网后本地打开。
+      安全边界：这个文件不加载外部脚本，不请求接口；转换逻辑全部在当前 HTML 内执行。标准化模式可检查字段，其他输出模式必须有 access_token。处理敏感 token 时，建议断网后本地打开。
     </div>
   </main>
 
@@ -391,7 +446,7 @@
       fileInput: document.getElementById("file-input"),
       shape: document.getElementById("shape"),
       count: document.getElementById("count"),
-      backfilled: document.getElementById("backfilled"),
+      skipped: document.getElementById("skipped"),
       msg: document.getElementById("msg"),
     };
 
@@ -490,62 +545,6 @@
       return firstText(preferred?.id);
     }
 
-    function buildCompatibilityIdToken(args) {
-      const now = Math.trunc(Date.now() / 1000);
-      const accountId = firstText(args.accountId);
-      const userId = firstText(args.userId);
-      const projectId = firstText(args.projectId);
-      const payload = {
-        aud: [firstText(args.clientId, DEFAULT_CLIENT_ID)],
-        email: firstText(args.email),
-        exp: now + 3600,
-        iat: now,
-        iss: "https://auth.openai.com",
-        "https://api.openai.com/auth": {
-          account_id: accountId,
-          chatgpt_account_id: accountId,
-          chatgpt_user_id: userId,
-          user_id: userId,
-          organization_id: firstText(args.organizationId),
-          project_id: projectId,
-          chatgpt_plan_type: firstText(args.planType, DEFAULT_PLAN_TYPE),
-        },
-        sub: userId || accountId || "local-compat",
-      };
-      return `${jsonToBase64Url({ alg: "RS256", typ: "JWT", kid: "compat" })}.${jsonToBase64Url(payload)}.${bytesToBase64Url(encoder.encode("local_compat_signature"))}`;
-    }
-
-    function ensureIdTokenClaims(args) {
-      const token = firstText(args.idToken);
-      const accountId = firstText(args.accountId);
-      if (!accountId) return token;
-
-      const payload = decodeJwtPayload(token);
-      if (!Object.keys(payload).length) return buildCompatibilityIdToken(args);
-
-      const auth = { ...extractAuth(payload) };
-      const existingChatgptAccountId = firstText(auth.chatgpt_account_id);
-      const existingAccountId = firstText(auth.account_id);
-      if (existingChatgptAccountId && existingAccountId) return token;
-
-      const resolvedAccountId = firstText(existingChatgptAccountId, existingAccountId, accountId);
-      auth.chatgpt_account_id = firstText(existingChatgptAccountId, resolvedAccountId);
-      auth.account_id = firstText(existingAccountId, resolvedAccountId);
-
-      if (args.userId) {
-        auth.chatgpt_user_id = firstText(auth.chatgpt_user_id, auth.user_id, args.userId);
-        auth.user_id = firstText(auth.user_id, auth.chatgpt_user_id, args.userId);
-      }
-      if (args.organizationId && !firstText(auth.organization_id)) auth.organization_id = args.organizationId;
-      if (args.projectId && !firstText(auth.project_id)) auth.project_id = args.projectId;
-      if (args.planType && !firstText(auth.chatgpt_plan_type)) auth.chatgpt_plan_type = args.planType;
-
-      const parts = token.split(".");
-      const header = parts[0] || jsonToBase64Url({ alg: "RS256", typ: "JWT", kid: "compat" });
-      const signature = parts[2] || bytesToBase64Url(encoder.encode("local_compat_signature"));
-      return `${header}.${jsonToBase64Url({ ...payload, "https://api.openai.com/auth": auth })}.${signature}`;
-    }
-
     function finalizeRecord(record) {
       const item = { ...record };
       item.chatgpt_account_id = firstText(item.chatgpt_account_id, item.account_id);
@@ -557,18 +556,45 @@
       item.openai_oauth_responses_websockets_v2_enabled = Boolean(item.openai_oauth_responses_websockets_v2_enabled);
       item.openai_oauth_responses_websockets_v2_mode = firstText(item.openai_oauth_responses_websockets_v2_mode, "off");
       item.disabled = Boolean(item.disabled);
-      item.id_token = ensureIdTokenClaims({
-        idToken: item.id_token,
-        accessToken: item.access_token,
-        accountId: item.chatgpt_account_id,
-        userId: item.chatgpt_user_id,
-        organizationId: item.organization_id,
-        projectId: firstText(item.project_id, item.workspace_id),
-        email: firstText(item.email, item.account_claims_email),
-        planType: item.plan_type,
-        clientId: item.client_id,
-      });
+      item.id_token = firstText(item.id_token);
       return item;
+    }
+
+    const CHATGPT_PLATFORM_NAMES = new Set(["openai", "chatgpt", "codex"]);
+    const NON_CHATGPT_PLATFORM_NAMES = new Set(["anthropic", "claude", "gemini", "gemini-cli", "antigravity", "grok", "xai"]);
+
+    function chatGPTCompatibilityError(input) {
+      const item = readObject(input);
+      const credentials = readObject(item.credentials);
+      const platform = firstText(item.platform).toLowerCase();
+      const provider = firstText(item.provider).toLowerCase();
+      const type = firstText(item.type).toLowerCase();
+
+      for (const [field, value] of [["platform", platform], ["provider", provider], ["type", type]]) {
+        if (NON_CHATGPT_PLATFORM_NAMES.has(value)) {
+          return `${field}=${value} 不属于 OpenAI/ChatGPT 格式域，请改用多供应商 CPA ↔ sub2api 通道`;
+        }
+      }
+      if (platform && !CHATGPT_PLATFORM_NAMES.has(platform)) return `不支持的 OpenAI/ChatGPT platform：${platform}`;
+      if (provider && !CHATGPT_PLATFORM_NAMES.has(provider)) return `不支持的 OpenAI/ChatGPT provider：${provider}`;
+
+      const authMode = firstText(
+        item.auth_mode,
+        item.openai_auth_mode,
+        credentials.auth_mode,
+        credentials.openai_auth_mode
+      ).toLowerCase();
+      const hasAgentIdentity = authMode === "agentidentity"
+        || type === "agentidentity"
+        || type === "agent_identity"
+        || Boolean(credentials.agent_identity && typeof credentials.agent_identity === "object")
+        || Boolean(credentials.agentIdentity && typeof credentials.agentIdentity === "object");
+      if (hasAgentIdentity) return "sub2api Agent Identity 依赖私钥，不能转换为 ChatGPT OAuth 凭证";
+
+      if (platform === "openai" && type && !new Set(["oauth", "openai", "chatgpt", "codex"]).has(type)) {
+        return `sub2api OpenAI type=${type} 不是可互转的 OAuth 凭证`;
+      }
+      return "";
     }
 
     function normalizeRecord(input) {
@@ -676,6 +702,31 @@
       return finalizeRecord(record);
     }
 
+    function appendInputObject(value, items) {
+      const root = readObject(value);
+      const data = readObject(root.data);
+      const body = Array.isArray(data.accounts) || Array.isArray(data.auths) ? data : root;
+      if (Array.isArray(body.accounts)) {
+        items.push(...body.accounts.filter((item) => item && typeof item === "object" && !Array.isArray(item)));
+        return "SUB bundle";
+      }
+      if (Array.isArray(body.auths)) {
+        items.push(...body.auths.filter((item) => item && typeof item === "object" && !Array.isArray(item)));
+        return "CPA auth 清单";
+      }
+      if (Object.keys(body).length) items.push(body);
+      return "";
+    }
+
+    function detectInputShape(item) {
+      if (item?.accessToken) return "ChatGPT Web session";
+      if (item?.tokens) return "Codex / Manager";
+      if (item?.credentials) return "sub2api account";
+      if (item?.provider === "codex" && item?.authType === "oauth") return "9router OAuth";
+      if (item?.type === "codex") return "CPA / Cockpit Codex";
+      return "Unified JSON";
+    }
+
     function parseInputItems(text) {
       const trimmed = String(text ?? "").trim();
       if (!trimmed) return { items: [], shape: "空输入" };
@@ -694,16 +745,15 @@
       let shape = cardExport ? "\u5361\u5bc6\u5bfc\u51fa TXT" : "JSONL";
 
       if (root && typeof root === "object" && !Array.isArray(root)) {
-        if (Array.isArray(root.accounts)) {
-          items.push(...root.accounts.filter((value) => value && typeof value === "object" && !Array.isArray(value)));
-          shape = "SUB bundle JSON";
-        } else {
-          items.push(root);
-          shape = root.accessToken ? "ChatGPT Web session JSON" : root.tokens ? "Codex JSON" : root.credentials ? "SUB account JSON" : "Unified JSON";
-        }
+        const collectionShape = appendInputObject(root, items);
+        shape = `${collectionShape || detectInputShape(items[0])} JSON`;
       } else if (Array.isArray(root)) {
-        items.push(...root.filter((value) => value && typeof value === "object" && !Array.isArray(value)));
-        shape = items[0]?.accessToken ? "ChatGPT Web session JSON \u6570\u7ec4" : items[0]?.tokens ? "Codex JSON \u6570\u7ec4" : items[0]?.credentials ? "SUB account JSON \u6570\u7ec4" : "JSON \u6570\u7ec4";
+        let collectionShape = "";
+        for (const value of root) {
+          if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+          collectionShape = appendInputObject(value, items) || collectionShape;
+        }
+        shape = `${collectionShape || detectInputShape(items[0])} JSON 数组`;
       } else {
         for (const [index, rawLine] of lines.entries()) {
           const line = rawLine.trim();
@@ -711,12 +761,8 @@
           try {
             const parsed = JSON.parse(line);
             if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-              if (Array.isArray(parsed.accounts)) {
-                items.push(...parsed.accounts.filter((value) => value && typeof value === "object" && !Array.isArray(value)));
-                shape = cardExport ? "\u5361\u5bc6\u5bfc\u51fa TXT" : "SUB bundle JSONL";
-              } else {
-                items.push(parsed);
-              }
+              const collectionShape = appendInputObject(parsed, items);
+              if (collectionShape) shape = cardExport ? "\u5361\u5bc6\u5bfc\u51fa TXT" : `${collectionShape} JSONL`;
             }
           } catch (error) {
             const lineNumber = index + (cardExport ? 2 : 1);
@@ -724,10 +770,7 @@
           }
         }
         if (!cardExport) {
-          if (items[0]?.accessToken) shape = "ChatGPT Web session JSONL";
-          else if (items[0]?.tokens) shape = "Codex JSONL";
-          else if (items[0]?.credentials) shape = "SUB account JSONL";
-          else shape = "Unified JSONL";
+          if (!/bundle|清单/.test(shape)) shape = `${detectInputShape(items[0])} JSONL`;
         }
       }
 
@@ -737,24 +780,28 @@
     function normalizeRecordsFromText(text) {
       const { items, shape } = parseInputItems(text);
       const recordMap = new Map();
-      let backfilled = 0;
+      const skipped = [];
 
-      for (const item of items) {
-        const sourceIdToken = firstText(item?.id_token, item?.credentials?.id_token, item?.tokens?.id_token);
-        const beforeAuth = extractAuth(decodeJwtPayload(sourceIdToken));
-        const hadClaims = Boolean(firstText(beforeAuth.chatgpt_account_id) && firstText(beforeAuth.account_id));
+      for (const [index, item] of items.entries()) {
+        const source = firstText(item?.email, item?.name, item?.meta?.label, `第 ${index + 1} 条`);
+        const compatibilityError = chatGPTCompatibilityError(item);
+        if (compatibilityError) {
+          skipped.push({ source, reason: compatibilityError });
+          continue;
+        }
         const record = normalizeRecord(item);
-        if (!record) continue;
+        if (!record) {
+          skipped.push({ source, reason: "无法识别为 OpenAI/ChatGPT 凭证记录" });
+          continue;
+        }
 
-        const afterAuth = extractAuth(decodeJwtPayload(record.id_token));
-        const hasClaims = Boolean(firstText(afterAuth.chatgpt_account_id) && firstText(afterAuth.account_id));
-        if (!hadClaims && hasClaims && firstText(record.chatgpt_account_id)) backfilled += 1;
-
-        const key = firstText(record.email, record.chatgpt_account_id, crypto.randomUUID()).trim().toLowerCase();
+        const accountId = firstText(record.chatgpt_account_id).trim();
+        const email = firstText(record.email).trim().toLowerCase();
+        const key = accountId ? `account:${accountId}` : email ? `email:${email}` : `record:${crypto.randomUUID()}`;
         recordMap.set(key, record);
       }
 
-      return { records: [...recordMap.values()], shape, backfilled };
+      return { records: [...recordMap.values()], shape, skipped };
     }
 
     function toIsoUtc8(date) {
@@ -774,12 +821,11 @@
 
     function buildCpaPayload(record, now = new Date()) {
       const item = finalizeRecord(record);
-      const expiresAt = item.refresh_token ? 0 : firstText(item.expired) ? item.expired : coerceTimestamp(decodeJwtPayload(item.access_token).exp);
-      return {
+      const expiresAt = firstText(item.expired) ? item.expired : coerceTimestamp(decodeJwtPayload(item.access_token).exp);
+      const payload = {
         type: "codex",
         email: item.email,
         expired: expiresAt ? toIsoUtc8(new Date(expiresAt * 1000)) : "",
-        id_token: item.id_token,
         account_id: firstText(item.chatgpt_account_id),
         disabled: Boolean(item.disabled),
         access_token: item.access_token,
@@ -787,23 +833,25 @@
         last_refresh: toIsoUtc8(now),
         refresh_token: item.refresh_token,
       };
+      if (item.id_token) payload.id_token = item.id_token;
+      return payload;
     }
 
-    function buildSubAccount(record, now = new Date()) {
+    function buildSubAccount(record) {
       const item = finalizeRecord(record);
-      const expiresAt = item.refresh_token ? 0 : firstText(item.expired) ? item.expired : coerceTimestamp(decodeJwtPayload(item.access_token).exp);
+      const expiresAt = firstText(item.expired) ? item.expired : coerceTimestamp(decodeJwtPayload(item.access_token).exp);
       const credentials = {
         access_token: item.access_token,
         chatgpt_account_id: item.chatgpt_account_id,
         chatgpt_user_id: item.chatgpt_user_id,
         client_id: firstText(item.client_id, DEFAULT_CLIENT_ID),
         email: item.email,
-        id_token: item.id_token,
         organization_id: item.organization_id,
         plan_type: firstText(item.plan_type, DEFAULT_PLAN_TYPE),
         refresh_token: item.refresh_token,
         session_token: item.session_token,
       };
+      if (item.id_token) credentials.id_token = item.id_token;
       if (expiresAt) credentials.expires_at = expiresAt;
 
       const account = {
@@ -822,11 +870,8 @@
         concurrency: 10,
         priority: 1,
         rate_multiplier: 1,
+        auto_pause_on_expired: true,
       };
-      if (expiresAt) {
-        account.expires_at = expiresAt;
-        account.auto_pause_on_expired = true;
-      }
       return account;
     }
 
@@ -896,12 +941,12 @@
         last_refresh: now.toISOString(),
         tokens: {
           access_token: item.access_token,
-          refresh_token: item.refresh_token || "__missing_refresh_token__",
+          refresh_token: item.refresh_token || "",
           id_token: item.id_token,
         },
         ...(missingRefresh ? {
-          axonhub_refresh_token_placeholder: true,
-          axonhub_note: "refresh_token is a placeholder; access_token works only until it expires.",
+          axonhub_refresh_token_missing: true,
+          axonhub_note: "refresh_token is missing; access_token works only until it expires.",
         } : {}),
       };
     }
@@ -925,56 +970,69 @@
       };
     }
 
-    function writeText(dst, offset, text) {
-      const bytes = encoder.encode(String(text ?? ""));
-      dst.set(bytes.slice(0, Math.max(0, dst.length - offset)), offset);
+    function u16(value) {
+      return Uint8Array.of(value & 0xff, (value >>> 8) & 0xff);
     }
 
-    function tarOctal(value, length) {
-      const text = Math.max(0, Math.trunc(value)).toString(8);
-      return `${text}`.padStart(length - 1, "0") + "\0";
+    function u32(value) {
+      return Uint8Array.of(value & 0xff, (value >>> 8) & 0xff, (value >>> 16) & 0xff, (value >>> 24) & 0xff);
     }
 
-    function tarChecksum(header) {
-      let sum = 0;
-      for (const byte of header) sum += byte;
-      return `${sum.toString(8).padStart(6, "0")}\0 `;
-    }
-
-    function createTarArchive(files, now = new Date()) {
-      const blocks = [];
-      const timestamp = Math.trunc(now.getTime() / 1000);
-
-      for (const file of files) {
-        const name = sanitizeFilename(file.name, "account.json").slice(0, 99);
-        const bytes = file.bytes instanceof Uint8Array ? file.bytes : encoder.encode(String(file.text ?? ""));
-        const header = new Uint8Array(512);
-
-        writeText(header, 0, name);
-        writeText(header, 100, "0000777\0");
-        writeText(header, 108, "0000000\0");
-        writeText(header, 116, "0000000\0");
-        writeText(header, 124, tarOctal(bytes.length, 12));
-        writeText(header, 136, tarOctal(timestamp, 12));
-        writeText(header, 148, "        ");
-        writeText(header, 156, "0");
-        writeText(header, 257, "ustar\0");
-        writeText(header, 263, "00");
-        writeText(header, 148, tarChecksum(header));
-
-        blocks.push(header, bytes);
-        const padding = (512 - (bytes.length % 512)) % 512;
-        if (padding) blocks.push(new Uint8Array(padding));
-      }
-
-      blocks.push(new Uint8Array(1024));
-      const output = new Uint8Array(blocks.reduce((size, block) => size + block.length, 0));
+    function concatBytes(...parts) {
+      const output = new Uint8Array(parts.reduce((size, part) => size + part.length, 0));
       let offset = 0;
-      for (const block of blocks) {
-        output.set(block, offset);
-        offset += block.length;
+      for (const part of parts) {
+        output.set(part, offset);
+        offset += part.length;
       }
       return output;
+    }
+
+    const crcTable = (() => {
+      const table = new Uint32Array(256);
+      for (let index = 0; index < 256; index += 1) {
+        let value = index;
+        for (let bit = 0; bit < 8; bit += 1) value = value & 1 ? 0xedb88320 ^ (value >>> 1) : value >>> 1;
+        table[index] = value >>> 0;
+      }
+      return table;
+    })();
+
+    function crc32(bytes) {
+      let crc = 0xffffffff;
+      for (const byte of bytes) crc = crcTable[(crc ^ byte) & 0xff] ^ (crc >>> 8);
+      return (crc ^ 0xffffffff) >>> 0;
+    }
+
+    function createZipArchive(files) {
+      const localParts = [];
+      const centralParts = [];
+      let offset = 0;
+
+      for (const file of files) {
+        const nameBytes = encoder.encode(sanitizeFilename(file.name, "account.json"));
+        const dataBytes = encoder.encode(String(file.text ?? ""));
+        const crc = crc32(dataBytes);
+        const local = concatBytes(
+          u32(0x04034b50), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+          u32(crc), u32(dataBytes.length), u32(dataBytes.length), u16(nameBytes.length), u16(0),
+          nameBytes, dataBytes
+        );
+        localParts.push(local);
+        centralParts.push(concatBytes(
+          u32(0x02014b50), u16(20), u16(20), u16(0x0800), u16(0), u16(0), u16(0),
+          u32(crc), u32(dataBytes.length), u32(dataBytes.length), u16(nameBytes.length),
+          u16(0), u16(0), u16(0), u16(0), u32(0), u32(offset), nameBytes
+        ));
+        offset += local.length;
+      }
+
+      const centralSize = centralParts.reduce((size, part) => size + part.length, 0);
+      const end = concatBytes(
+        u32(0x06054b50), u16(0), u16(0), u16(files.length), u16(files.length),
+        u32(centralSize), u32(offset), u16(0)
+      );
+      return concatBytes(...localParts, ...centralParts, end);
     }
 
     function buildOutput(records, mode, now = new Date()) {
@@ -992,6 +1050,12 @@
         };
       }
 
+      const missingAccessToken = records.filter((record) => !firstText(record.access_token));
+      if (missingAccessToken.length) {
+        const labels = missingAccessToken.slice(0, 3).map((record) => firstText(record.email, record.chatgpt_account_id, "未知账号"));
+        throw new Error(`除标准化 JSONL 外，目标格式必须有 access_token；缺失 ${missingAccessToken.length} 条：${labels.join("、")}`);
+      }
+
       if (mode === "to-cpa") {
         const payloads = records.map((record) => buildCpaPayload(record, now));
         if (payloads.length === 1) {
@@ -999,31 +1063,33 @@
           return {
             text,
             parts: [text],
-            name: exportFileName(1, "json", now),
+            name: `codex-${sanitizeFilename(payloads[0].email, "account")}.json`,
             mime: "application/json;charset=utf-8",
             summary: "已生成 1 个 CPA token JSON。",
           };
         }
 
         const files = payloads.map((payload, index) => ({
-          name: `${sanitizeFilename(payload.email, `account_${index + 1}`)}.json`,
+          name: `codex-${sanitizeFilename(payload.email, `account_${index + 1}`)}.json`,
           text: JSON.stringify(payload, null, 2),
         }));
-        const tarBytes = createTarArchive(files, now);
+        const zipBytes = createZipArchive(files);
         return {
-          text: ["CPA .tar 包内文件：", ...files.map((file) => `- ${file.name}`)].join("\n"),
-          parts: [tarBytes],
-          name: exportFileName(payloads.length, "tar", now),
-          mime: "application/x-tar",
-          summary: `已生成 1 个 CPA tar 包，包含 ${files.length} 个单账号 JSON 文件。`,
+          text: ["CPA ZIP 包内文件：", ...files.map((file) => `- ${file.name}`)].join("\n"),
+          parts: [zipBytes],
+          name: "cliproxyapi-auth-files.zip",
+          mime: "application/zip",
+          summary: `已生成 1 个 CPA ZIP，包含 ${files.length} 个单账号 JSON 文件。`,
         };
       }
 
       if (mode === "to-sub") {
         const bundle = {
+          type: "sub2api-data",
+          version: 1,
           exported_at: now.toISOString(),
           proxies: [],
-          accounts: records.map((record) => buildSubAccount(record, now)),
+          accounts: records.map((record) => buildSubAccount(record)),
         };
         const text = JSON.stringify(bundle, null, 2);
         return {
@@ -1061,7 +1127,12 @@
 
     function convertText(text, mode, now = new Date()) {
       const parsed = normalizeRecordsFromText(text);
-      return { ...parsed, output: buildOutput(parsed.records, mode, now) };
+      if (!parsed.records.length && parsed.skipped.length) {
+        throw new Error(`没有可用于 OpenAI/ChatGPT 通道的记录：${parsed.skipped[0].reason}`);
+      }
+      const output = buildOutput(parsed.records, mode, now);
+      if (parsed.skipped.length) output.summary += `；另跳过 ${parsed.skipped.length} 条：${parsed.skipped[0].reason}`;
+      return { ...parsed, output };
     }
 
     function setMessage(text, isError = false) {
@@ -1075,7 +1146,7 @@
         currentOutput = result.output;
         el.shape.textContent = result.shape;
         el.count.textContent = String(result.records.length);
-        el.backfilled.textContent = String(result.backfilled);
+        el.skipped.textContent = String(result.skipped.length);
         el.out.textContent = currentOutput.text;
         el.copy.disabled = false;
         el.download.disabled = false;
@@ -1238,11 +1309,11 @@
       el.out.textContent = "尚未生成";
       el.shape.textContent = "等待输入";
       el.count.textContent = "0";
-      el.backfilled.textContent = "0";
+      el.skipped.textContent = "0";
       currentOutput = null;
       el.copy.disabled = true;
       el.download.disabled = true;
-      setMessage("CPA 多账号会下载 .tar，包内每个账号一个 JSON 文件。");
+      setMessage("CPA 多账号会下载 ZIP，包内每个账号一个原生 Codex auth JSON。");
     });
     el.demo.addEventListener("click", () => {
       el.src.value = demoInput();
