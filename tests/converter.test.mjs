@@ -5,10 +5,11 @@ import test from 'node:test'
 import vm from 'node:vm'
 
 const html = readFileSync(new URL('../public/index.html', import.meta.url), 'utf8')
+const openaiScript = readFileSync(new URL('../public/openai-converter.js', import.meta.url), 'utf8')
 const scriptMatch = html.match(/<script>([\s\S]*?)<\/script>/)
 assert.ok(scriptMatch, 'index.html should contain the converter script')
 
-const eventBindingMarker = 'els.dirCpaToSub.addEventListener'
+const eventBindingMarker = 'els.sourceInput.addEventListener'
 const coreSource = scriptMatch[1].slice(0, scriptMatch[1].indexOf(eventBindingMarker))
 assert.ok(coreSource.length > 0, 'converter core should be found before UI event bindings')
 
@@ -40,18 +41,81 @@ const context = vm.createContext({
   setTimeout
 })
 
+vm.runInContext(openaiScript, context)
 vm.runInContext(`${coreSource}
 globalThis.converter = {
   buildCPA,
   buildSub2API,
   convertCPARecord,
   convertSubAccount,
+  inspectInput,
   parseInputText,
   validateSub2APIDataHeader
 }`, context)
 
 const converter = context.converter
 const plain = (value) => JSON.parse(JSON.stringify(value))
+
+test('input format is detected and only supported outputs are listed', () => {
+  const source = elements.get('sourceInput')
+  const codex = {
+    type: 'codex',
+    email: 'codex@example.com',
+    account_id: 'account-codex',
+    access_token: 'access-codex',
+    refresh_token: 'refresh-codex'
+  }
+  source.value = JSON.stringify(codex)
+  const openai = converter.inspectInput({ entries: [{ name: 'input', value: codex }], errors: [] })
+  assert.equal(openai.engine, 'openai')
+  assert.deepEqual([...openai.modes], ['to-sub', 'to-cpa', 'to-codex', 'to-9router', 'to-cockpit', 'to-axonhub', 'to-codex-manager', 'normalize'])
+
+  const claude = { type: 'claude', email: 'claude@example.com', access_token: 'a', refresh_token: 'r' }
+  source.value = JSON.stringify([codex, claude])
+  const mixed = converter.inspectInput({ entries: [{ name: '1', value: codex }, { name: '2', value: claude }], errors: [] })
+  assert.equal(mixed.engine, 'cpa')
+  assert.deepEqual([...mixed.modes], ['to-sub'])
+})
+
+test('mixed-provider sub2api only exposes CPA when every account is reversible', () => {
+  const source = elements.get('sourceInput')
+  const openai = {
+    name: 'openai@example.com', platform: 'openai', type: 'oauth',
+    credentials: { access_token: 'access-openai', chatgpt_account_id: 'account-openai' }
+  }
+  const anthropic = {
+    name: 'claude@example.com', platform: 'anthropic', type: 'oauth',
+    credentials: { access_token: 'access-claude' }
+  }
+  const reversible = { type: 'sub2api-data', version: 1, proxies: [], accounts: [openai, anthropic] }
+  source.value = JSON.stringify(reversible)
+  const reversibleProfile = converter.inspectInput({ entries: [{ name: 'sub.json', value: reversible }], errors: [] })
+  assert.equal(reversibleProfile.engine, 'sub')
+  assert.deepEqual([...reversibleProfile.modes], ['to-cpa'])
+
+  const gemini = {
+    name: 'gemini@example.com', platform: 'gemini', type: 'oauth',
+    credentials: { access_token: 'access-gemini' }
+  }
+  const forwardOnly = { ...reversible, accounts: [openai, gemini] }
+  source.value = JSON.stringify(forwardOnly)
+  const forwardOnlyProfile = converter.inspectInput({ entries: [{ name: 'sub.json', value: forwardOnly }], errors: [] })
+  assert.equal(forwardOnlyProfile.engine, '')
+  assert.deepEqual([...forwardOnlyProfile.modes], [])
+
+  const identity = {
+    name: 'identity@example.com', platform: 'openai', type: 'oauth',
+    credentials: {
+      auth_mode: 'agentIdentity', agent_runtime_id: 'runtime-1', agent_private_key: 'private-1',
+      chatgpt_account_id: 'account-1', chatgpt_user_id: 'user-1'
+    }
+  }
+  const mixedIdentity = { ...reversible, accounts: [identity, anthropic] }
+  source.value = JSON.stringify(mixedIdentity)
+  const identityProfile = converter.inspectInput({ entries: [{ name: 'sub.json', value: mixedIdentity }], errors: [] })
+  assert.equal(identityProfile.engine, '')
+  assert.deepEqual([...identityProfile.modes], [])
+})
 
 test('CLIProxyAPI xai OAuth converts to a native sub2api grok account', () => {
   const result = plain(converter.buildSub2API([{

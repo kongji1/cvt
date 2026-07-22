@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>CPA / sub2api 账号格式转换</title>
+  <title>凭证格式互转中心</title>
   <style>
     :root {
       color-scheme: light;
@@ -340,31 +340,36 @@
       line-height: 1.4;
     }
 
-    .segmented {
-      display: inline-grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 3px;
-      padding: 3px;
+    .detected-badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: var(--surface-soft);
+      color: var(--accent-ink);
+      font-size: 13px;
+      font-weight: 750;
       white-space: nowrap;
     }
 
-    .segmented button {
-      min-height: 34px;
-      padding: 0 12px;
-      border-radius: 6px;
+    .output-picker {
+      display: grid;
+      gap: 3px;
       color: var(--muted);
-      background: transparent;
-      cursor: pointer;
-      transition: background 150ms ease, color 150ms ease, box-shadow 150ms ease;
+      font-size: 11px;
+      font-weight: 700;
     }
 
-    .segmented button.active {
-      color: var(--accent-ink);
+    .output-picker select {
+      min-width: 190px;
+      min-height: 36px;
+      padding: 0 34px 0 10px;
+      border: 1px solid var(--line-strong);
+      border-radius: 7px;
+      color: var(--text);
       background: var(--surface);
-      box-shadow: 0 5px 16px rgba(36, 56, 66, 0.10);
     }
 
     .input-body,
@@ -402,6 +407,7 @@
       color: var(--text);
       background: var(--surface);
       cursor: pointer;
+      text-decoration: none;
       user-select: none;
       transition: transform 120ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
     }
@@ -847,7 +853,9 @@
         display: grid;
       }
 
-      .segmented {
+      .detected-badge,
+      .output-picker,
+      .output-picker select {
         width: 100%;
       }
 
@@ -872,16 +880,11 @@
 </head>
 <body>
   <main class="shell">
-    <nav class="tool-nav" aria-label="转换器导航">
-      <a class="active" href="/" aria-current="page">多供应商：CPA ↔ sub2api</a>
-      <a href="/session/">OpenAI / ChatGPT 格式互转</a>
-    </nav>
-
     <header class="topbar">
       <div class="topbar-copy">
-        <p class="eyebrow">CLIProxyAPI / sub2api</p>
-        <h1>账号凭证格式转换台</h1>
-        <p class="summary">本页处理 CPA 与 sub2api 的多供应商 OAuth 凭证映射；ChatGPT Session、Codex、9router 等 OpenAI 专用格式则进入独立的统一凭证模型，不再把不同供应商硬转成同一种账号。</p>
+        <p class="eyebrow">CPA / sub2api / OpenAI ecosystem</p>
+        <h1>凭证格式互转中心</h1>
+        <p class="summary">粘贴或导入凭证后自动识别输入格式，只列出当前数据真正支持的输出格式。CPA Codex、ChatGPT Session、sub2api OpenAI 与 Codex 工具链在同一页互转；其他 CPA 供应商也在这里转换。</p>
       </div>
       <aside class="source-note" aria-label="源码版本">
         <div class="source-note-header">
@@ -912,29 +915,6 @@
             sub2api main: 5a8d6c4e, 2026-07-21
           </a>
         </div>
-        <div class="promo-links" aria-label="相关站点">
-          <a class="promo-banner" href="https://code.revia.top" target="_blank" rel="sponsored noopener noreferrer" aria-label="打开瑞维亚AI自用中转站">
-            <span class="promo-copy">
-              <strong>自用中转站</strong>
-              <span class="promo-brand">瑞维亚AI</span>
-            </span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 3h6v6"/>
-              <path d="M10 14 21 3"/>
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            </svg>
-          </a>
-          <a class="promo-banner" href="https://console.buycodekey.com/sign-up?aff=qF1c" target="_blank" rel="sponsored noopener noreferrer" aria-label="打开 BuyCodekeyAPI">
-            <span class="promo-copy">
-              <strong>BuyCodekeyAPI</strong>
-            </span>
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M15 3h6v6"/>
-              <path d="M10 14 21 3"/>
-              <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/>
-            </svg>
-          </a>
-        </div>
       </aside>
     </header>
 
@@ -942,13 +922,10 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">
-            <h2 id="inputTitle">输入 CPA auth JSON</h2>
-            <p id="inputHint">支持单个对象、数组、NDJSON、连续粘贴多个 JSON 对象，也支持多选 .json 文件。</p>
+            <h2 id="inputTitle">输入凭证数据</h2>
+            <p id="inputHint">支持 JSON、JSONL、连续 JSON、卡密导出 TXT 和多文件；输入后自动识别。</p>
           </div>
-          <div class="segmented" role="tablist" aria-label="转换方向">
-            <button id="dirCpaToSub" class="active" type="button" role="tab" aria-selected="true">CPA -> sub2api</button>
-            <button id="dirSubToCpa" type="button" role="tab" aria-selected="false">sub2api -> CPA</button>
-          </div>
+          <span id="detectedBadge" class="detected-badge" aria-live="polite">等待识别</span>
         </div>
 
         <div class="input-body">
@@ -961,6 +938,8 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
               清空
             </button>
+            <button id="pasteBtn" class="btn ghost" type="button" title="从剪贴板读取凭证">从剪贴板</button>
+            <a class="btn ghost" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer">打开 ChatGPT Session</a>
           </div>
 
           <label id="dropzone" class="dropzone">
@@ -971,11 +950,11 @@
               <strong>选择或拖入 JSON 文件</strong>
               <span>多文件会合并转换；文件只在当前浏览器会话中读取。</span>
             </span>
-            <input id="fileInput" class="hidden" type="file" accept=".json,application/json" multiple>
+            <input id="fileInput" class="hidden" type="file" accept=".json,.jsonl,.txt,application/json,text/plain" multiple>
           </label>
           <div id="fileList" class="file-list" aria-live="polite"></div>
 
-          <textarea id="sourceInput" class="editor" spellcheck="false" placeholder='粘贴 CLIProxyAPI auth JSON，例如：&#10;{"type":"codex","email":"me@example.com","access_token":"...","refresh_token":"...","id_token":"...","expired":"2099-01-01T00:00:00Z"}'></textarea>
+          <textarea id="sourceInput" class="editor" spellcheck="false" placeholder='粘贴 CPA、sub2api、ChatGPT Session、Codex、9router、Cockpit、AxonHub 或 Codex-Manager 凭证...'></textarea>
 
           <div class="options" aria-label="输出设置">
             <div class="check">
@@ -989,10 +968,17 @@
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">
-            <h2 id="outputTitle">sub2api 导入包</h2>
-            <p id="outputHint">输出为 sub2api 前端导入弹窗读取的 DataPayload 文件。</p>
+            <h2 id="outputTitle">选择输出格式</h2>
+            <p id="outputHint">识别输入后，只显示可以安全生成的格式。</p>
           </div>
           <div class="toolbar output-actions">
+            <label class="output-picker" for="outputMode">
+              <span>输出格式</span>
+              <select id="outputMode" disabled><option>等待输入</option></select>
+            </label>
+            <button id="generateAgentBtn" class="btn primary hidden" type="button" title="本地生成 Ed25519 私钥并在线注册 Runtime">
+              注册并生成
+            </button>
             <button id="copyBtn" class="btn" type="button" disabled title="复制输出">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               复制
@@ -1011,8 +997,8 @@
         <div class="output-body">
           <div class="stats" aria-label="转换统计">
             <div class="stat"><span>输入记录</span><strong id="statRecords">0</strong></div>
-            <div class="stat"><span>已生成</span><strong id="statAccounts">0</strong></div>
-            <div class="stat"><span>代理</span><strong id="statProxies">0</strong></div>
+            <div class="stat"><span>识别格式</span><strong id="statDetected">等待输入</strong></div>
+            <div class="stat"><span>可输出</span><strong id="statSupported">0</strong></div>
             <div class="stat"><span>跳过</span><strong id="statSkipped">0</strong></div>
           </div>
 
@@ -1046,16 +1032,16 @@
 
     <section class="format-notes" aria-label="格式说明">
       <div class="format-note">
-        <strong>多供应商互转域</strong>
-        <span>Codex/OpenAI、Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA auth 与 sub2api OAuth account 之间双向映射。</span>
+        <strong>自动识别，不选方向</strong>
+        <span>先识别输入容器、账号格式和供应商，再列出当前数据可生成的目标格式。</span>
       </div>
       <div class="format-note">
-        <strong>OpenAI 专用互转域</strong>
-        <span>ChatGPT Web Session、CPA Codex、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 请使用<a href="/session/">OpenAI / ChatGPT 格式互转</a>。</span>
+        <strong>CPA Codex 就是 OpenAI 凭证格式</strong>
+        <span>CPA Codex、ChatGPT Web Session、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 共用同一套 OpenAI 凭证模型。</span>
       </div>
       <div class="format-note">
-        <strong>Gemini 仅单向</strong>
-        <span>旧 CPA Gemini / gemini-cli 可迁移到 sub2api；最新版 CPA 已移除 Gemini auth 加载，因此 sub2api Gemini 不能反向生成有效 CPA 文件。</span>
+        <strong>其他 CPA 供应商也在本页</strong>
+        <span>Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA 与 sub2api 之间互转；旧 CPA Gemini 仅支持迁移到 sub2api。</span>
       </div>
       <div class="format-note">
         <strong>不是所有账号都能反向</strong>
@@ -1074,6 +1060,8 @@
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
+  <script src="/openai-converter.js"></script>
+  <script src="/agent-identity.js"></script>
   <script>
     const PROVIDER_TO_PLATFORM = {
       codex: "openai",
@@ -1102,12 +1090,12 @@
     const XAI_DEFAULT_TOKEN_ENDPOINT = "https://auth.x.ai/oauth2/token";
 
     const els = {
-      dirCpaToSub: document.getElementById("dirCpaToSub"),
-      dirSubToCpa: document.getElementById("dirSubToCpa"),
       inputTitle: document.getElementById("inputTitle"),
       inputHint: document.getElementById("inputHint"),
+      detectedBadge: document.getElementById("detectedBadge"),
       outputTitle: document.getElementById("outputTitle"),
       outputHint: document.getElementById("outputHint"),
+      outputMode: document.getElementById("outputMode"),
       sourceInput: document.getElementById("sourceInput"),
       outputJson: document.getElementById("outputJson"),
       fileInput: document.getElementById("fileInput"),
@@ -1115,6 +1103,8 @@
       dropzone: document.getElementById("dropzone"),
       sampleBtn: document.getElementById("sampleBtn"),
       clearBtn: document.getElementById("clearBtn"),
+      pasteBtn: document.getElementById("pasteBtn"),
+      generateAgentBtn: document.getElementById("generateAgentBtn"),
       copyBtn: document.getElementById("copyBtn"),
       downloadBtn: document.getElementById("downloadBtn"),
       downloadLabel: document.getElementById("downloadLabel"),
@@ -1122,8 +1112,8 @@
       downloadSplitLabel: document.getElementById("downloadSplitLabel"),
       prettyJson: document.getElementById("prettyJson"),
       statRecords: document.getElementById("statRecords"),
-      statAccounts: document.getElementById("statAccounts"),
-      statProxies: document.getElementById("statProxies"),
+      statDetected: document.getElementById("statDetected"),
+      statSupported: document.getElementById("statSupported"),
       statSkipped: document.getElementById("statSkipped"),
       previewRows: document.getElementById("previewRows"),
       previewMeta: document.getElementById("previewMeta"),
@@ -1132,13 +1122,16 @@
     };
 
     const state = {
-      direction: "cpa-to-sub",
       files: [],
+      profile: null,
       lastOutput: "",
       lastFileName: "sub2api-import.json",
       lastDownloadKind: "json",
+      lastParts: [],
+      lastMime: "application/json;charset=utf-8",
       lastCPAFiles: [],
-      lastSub2APIFiles: []
+      lastSub2APIFiles: [],
+      agentGenerating: false
     };
 
     const DEFAULT_SUB2API_OAUTH_ACCOUNT_FIELDS = Object.freeze({
@@ -1224,6 +1217,23 @@
     }
   ]
 }`;
+
+    const OUTPUT_MODES = Object.freeze({
+      "to-sub": "sub2api 导入包",
+      "to-cpa": "CPA Codex / auth ZIP",
+      "to-codex": "Codex auth.json",
+      "to-9router": "9router OAuth JSON",
+      "to-cockpit": "Cockpit JSON",
+      "to-axonhub": "AxonHub auth.json",
+      "to-codex-manager": "Codex-Manager JSON",
+      "to-agent-identity": "Agent Identity auth.json",
+      normalize: "标准化 JSONL"
+    });
+
+    const OPENAI_OUTPUT_ORDER = [
+      "to-sub", "to-agent-identity", "to-cpa", "to-codex", "to-9router", "to-cockpit",
+      "to-axonhub", "to-codex-manager", "normalize"
+    ];
 
     function debounce(fn, wait) {
       let timer = 0;
@@ -1945,24 +1955,217 @@
       return { entries, errors };
     }
 
+    function combinedInputText() {
+      return [els.sourceInput.value, ...state.files.map((file) => file.text)]
+        .filter((text) => String(text || "").trim())
+        .join("\n");
+    }
+
+    function classifyInputValue(value, profile) {
+      if (!value || typeof value !== "object" || Array.isArray(value)) return;
+      const data = unwrapSub2APIEnvelope(value);
+      if (Array.isArray(data?.accounts)) {
+        profile.hasSub = true;
+        profile.labels.add("sub2api bundle");
+        data.accounts.forEach((account) => classifyInputValue(account, profile));
+        return;
+      }
+
+      const platform = firstString(data, ["platform"]).toLowerCase();
+      if (platform && data.credentials && typeof data.credentials === "object") {
+        profile.hasSub = true;
+        profile.subAccountCount += 1;
+        profile.providers.add(platform);
+        const credentials = data.credentials;
+        const type = firstString(data, ["type"]).toLowerCase();
+        const authMode = firstString(credentials, ["auth_mode", "openai_auth_mode"]).toLowerCase();
+        const hasAgentIdentity = authMode === "agentidentity" || authMode === "agent_identity"
+          || (credentials.agent_identity && typeof credentials.agent_identity === "object")
+          || (credentials.agentIdentity && typeof credentials.agentIdentity === "object")
+          || Boolean(credentials.agent_runtime_id && credentials.agent_private_key);
+        if (platform === "openai") {
+          try {
+            const parsed = CVT_OPENAI.parse(JSON.stringify(data));
+            if (parsed.records.length) profile.labels.add(parsed.shape.replace(/\s+JSON(?:L|\s+数组)?$/, ""));
+            else profile.labels.add(hasAgentIdentity ? "sub2api Agent Identity" : "sub2api OpenAI OAuth");
+          } catch (_) {
+            profile.labels.add(hasAgentIdentity ? "sub2api Agent Identity" : "sub2api OpenAI OAuth");
+          }
+        } else {
+          profile.labels.add(`sub2api ${platform}`);
+        }
+        const hasAccessToken = Boolean(firstString(credentials, ["access_token", "accessToken"]));
+        if (PLATFORM_TO_PROVIDER[platform] && platform !== "gemini" && (!type || type === "oauth") && !hasAgentIdentity && hasAccessToken) {
+          profile.subReversibleCount += 1;
+        }
+        return;
+      }
+
+      const type = firstString(data, ["type"]).toLowerCase();
+      const cpaPlatform = PROVIDER_TO_PLATFORM[type];
+      if (cpaPlatform) {
+        profile.hasCPA = true;
+        profile.cpaRecordCount += 1;
+        profile.labels.add(type === "codex" || type === "openai" ? "CPA Codex" : `CPA ${type}`);
+        profile.providers.add(cpaPlatform);
+        const meta = materializeCPARecord(data);
+        if (meta && !boolValue(meta.disabled) && extractAccessToken(meta)) profile.cpaConvertibleCount += 1;
+        return;
+      }
+
+      try {
+        const parsed = CVT_OPENAI.parse(JSON.stringify(data));
+        if (parsed.records.length) {
+          profile.labels.add(parsed.shape.replace(/\s+JSON(?:L|\s+数组)?$/, ""));
+          profile.providers.add("openai");
+        }
+      } catch (_) {
+        // 保持未识别；inspectInput 会在全量文本上再次精确解析。
+      }
+    }
+
+    function inspectInput(collected) {
+      const text = combinedInputText();
+      const profile = {
+        text,
+        labels: new Set(),
+        providers: new Set(),
+        hasCPA: false,
+        hasSub: false,
+        subAccountCount: 0,
+        subReversibleCount: 0,
+        cpaRecordCount: 0,
+        cpaConvertibleCount: 0,
+        engine: "",
+        modes: [],
+        modeDetails: {},
+        openai: null,
+        openaiText: text
+      };
+      collected.entries.forEach((entry) => classifyInputValue(entry.value, profile));
+      if (!text.trim()) return profile;
+
+      try {
+        profile.openai = CVT_OPENAI.parse(text);
+      } catch (_) {
+        try {
+          profile.openaiText = JSON.stringify(collected.entries.map((entry) => entry.value));
+          profile.openai = CVT_OPENAI.parse(profile.openaiText);
+        } catch (_) {
+          profile.openai = null;
+        }
+      }
+
+      const nonOpenAIProvider = [...profile.providers].some((provider) => provider !== "openai");
+      if (profile.openai?.records.length && !nonOpenAIProvider) {
+        profile.engine = "openai";
+        const capability = CVT_OPENAI.supportedModes(profile.openai.records);
+        profile.modes = OPENAI_OUTPUT_ORDER.filter((mode) => capability.modes.includes(mode));
+        profile.modeDetails = capability.details;
+        if (!profile.labels.size) profile.labels.add(profile.openai.shape);
+      } else if (profile.hasCPA && !profile.hasSub && profile.cpaRecordCount > 0 && profile.cpaConvertibleCount === profile.cpaRecordCount) {
+        profile.engine = "cpa";
+        profile.modes = ["to-sub"];
+        profile.modeDetails["to-sub"] = { level: "complete", note: "所有 CPA 记录都可无损写入 sub2api 原生账号字段" };
+      } else if (profile.hasSub && !profile.hasCPA && profile.subAccountCount > 0 && profile.subReversibleCount === profile.subAccountCount) {
+        profile.engine = "sub";
+        profile.modes = ["to-cpa"];
+        profile.modeDetails["to-cpa"] = { level: "complete", note: "所有账号均为 CPA 当前支持的 OAuth 类型" };
+      }
+      return profile;
+    }
+
+    function outputModeOptionLabel(mode, detail) {
+      const base = OUTPUT_MODES[mode] || mode;
+      if (detail?.level === "online") return `${base}（在线注册）`;
+      if (detail?.level === "degraded") return `${base}（刷新受限）`;
+      if (detail?.level === "sensitive") return `${base}（含私钥）`;
+      return base;
+    }
+
+    function setOutputModes(profile) {
+      const previous = els.outputMode.value;
+      els.outputMode.innerHTML = profile.modes.length
+        ? profile.modes.map((mode) => `<option value="${mode}">${escapeHTML(outputModeOptionLabel(mode, profile.modeDetails[mode]))}</option>`).join("")
+        : '<option value="">无可用输出</option>';
+      if (profile.modes.includes(previous)) els.outputMode.value = previous;
+      els.outputMode.disabled = !profile.modes.length;
+
+      const detected = [...profile.labels].join(" + ") || (profile.text.trim() ? "未识别" : "等待输入");
+      els.detectedBadge.textContent = detected;
+      els.statDetected.textContent = detected;
+      els.statSupported.textContent = String(profile.modes.length);
+      const label = OUTPUT_MODES[els.outputMode.value];
+      const detail = profile.modeDetails[els.outputMode.value];
+      els.outputTitle.textContent = label || "选择输出格式";
+      const requiresOnlineRegistration = els.outputMode.value === "to-agent-identity" && detail?.level === "online";
+      els.generateAgentBtn.classList.toggle("hidden", !requiresOnlineRegistration);
+      els.generateAgentBtn.disabled = !requiresOnlineRegistration || state.agentGenerating;
+      els.outputHint.textContent = profile.modes.length
+        ? `已自动识别输入；当前可选择 ${profile.modes.length} 种输出格式。${detail?.note ? ` ${detail.note}` : ""}`
+        : profile.text.trim() ? "当前输入没有可安全生成的目标格式。" : "识别输入后，只显示可以安全生成的格式。";
+    }
+
+    function adaptOpenAIResult(parsed) {
+      const output = parsed.output;
+      return {
+        outputText: output.text,
+        fileName: output.name,
+        downloadKind: output.mime === "application/zip" ? "blob" : "json",
+        parts: output.parts,
+        mime: output.mime,
+        cpaFiles: [],
+        sub2apiFiles: [],
+        previews: parsed.records.map((record) => ({
+          name: record.email || record.chatgpt_account_id || "OpenAI account",
+          platform: "openai",
+          type: record.credential_kind === "agent_identity" ? "Agent Identity" : "OAuth",
+          expires: record.expired ? new Date(record.expired * 1000).toISOString() : "",
+          status: "可导出"
+        })),
+        issues: [],
+        skipped: parsed.skipped,
+        proxyCount: 0,
+        accountCount: parsed.records.length,
+        summary: output.summary
+      };
+    }
+
+    function emptyResult(reason = "") {
+      return {
+        outputText: "",
+        fileName: "",
+        downloadKind: "json",
+        parts: [],
+        mime: "application/json;charset=utf-8",
+        cpaFiles: [],
+        sub2apiFiles: [],
+        previews: [],
+        issues: reason ? [{ source: "输入", reason }] : [],
+        skipped: [],
+        proxyCount: 0,
+        accountCount: 0
+      };
+    }
+
     function renderResult(result, totalRecords, parseErrors) {
       state.lastOutput = result.outputText;
       state.lastFileName = result.fileName;
       state.lastDownloadKind = result.downloadKind || "json";
+      state.lastParts = result.parts || [];
+      state.lastMime = result.mime || "application/json;charset=utf-8";
       state.lastCPAFiles = result.cpaFiles || [];
       state.lastSub2APIFiles = result.sub2apiFiles || [];
       els.outputJson.value = result.outputText;
       els.downloadBtn.disabled = !result.outputText;
       els.copyBtn.disabled = !result.outputText;
       els.downloadLabel.textContent = state.lastDownloadKind === "zip" ? "下载 ZIP" : "下载 JSON";
-      const splitAvailable = state.direction === "cpa-to-sub" && state.lastSub2APIFiles.length > 0;
+      const splitAvailable = state.lastSub2APIFiles.length > 0;
       els.downloadSplitBtn.disabled = !splitAvailable;
-      els.downloadSplitBtn.classList.toggle("hidden", state.direction !== "cpa-to-sub");
+      els.downloadSplitBtn.classList.toggle("hidden", !splitAvailable);
       els.downloadSplitLabel.textContent = `拆分 ZIP${state.lastSub2APIFiles.length ? ` (${state.lastSub2APIFiles.length})` : ""}`;
 
       els.statRecords.textContent = String(result.totalRecordsOverride ?? totalRecords);
-      els.statAccounts.textContent = String(result.accountCount);
-      els.statProxies.textContent = String(result.proxyCount);
       els.statSkipped.textContent = String(result.skipped.length + parseErrors.length);
       els.previewMeta.textContent = result.accountCount ? "凭证已脱敏" : "等待有效账号";
 
@@ -1986,6 +2189,8 @@
       for (const skipped of result.skipped) issueItems.push({ kind: "已跳过", ...skipped });
       for (const issue of result.issues) issueItems.push({ kind: "注意", ...issue });
 
+      if (result.summary) els.outputHint.textContent = result.summary;
+
       els.issues.innerHTML = issueItems.slice(0, 8).map((item) => {
         const tagClass = item.kind === "解析失败" ? "danger" : item.kind === "已跳过" ? "warn" : "";
         return `<li><span class="tag ${tagClass}">${escapeHTML(item.kind)}</span><span><strong>${escapeHTML(item.source || "输入")}</strong> ${escapeHTML(item.reason || "")}</span></li>`;
@@ -2003,31 +2208,68 @@
 
     function convert() {
       const collected = collectEntries();
-      const result = state.direction === "cpa-to-sub"
-        ? buildSub2API(collected.entries)
-        : buildCPA(collected.entries);
-      renderResult(result, collected.entries.length, collected.errors);
+      const profile = inspectInput(collected);
+      state.profile = profile;
+      setOutputModes(profile);
+      if (!profile.text.trim()) {
+        renderResult(emptyResult(), 0, []);
+        return;
+      }
+      if (!profile.modes.length) {
+        renderResult(emptyResult("无法识别输入，或输入格式没有可安全生成的目标格式。"), collected.entries.length, collected.errors);
+        return;
+      }
+
+      try {
+        const mode = els.outputMode.value;
+        const modeDetail = profile.modeDetails[mode];
+        if (profile.engine === "openai" && mode === "to-agent-identity" && modeDetail?.level === "online") {
+          const prepared = adaptOpenAIResult({
+            ...profile.openai,
+            output: {
+              text: "",
+              name: "auth.json",
+              mime: "application/json;charset=utf-8",
+              parts: [],
+              summary: "已完成 JWT 与必要 claims 校验。点击“注册并生成”后，浏览器才会本地生成 Ed25519 私钥并注册 Runtime；私钥不会发送到服务端。"
+            }
+          });
+          renderResult(prepared, profile.openai.records.length, []);
+          return;
+        }
+        const result = profile.engine === "openai"
+          ? adaptOpenAIResult(CVT_OPENAI.convert(profile.openaiText, mode))
+          : mode === "to-sub" ? buildSub2API(collected.entries) : buildCPA(collected.entries);
+        renderResult(result, profile.openai?.records.length || collected.entries.length, profile.engine === "openai" ? [] : collected.errors);
+      } catch (error) {
+        renderResult(emptyResult(error instanceof Error ? error.message : String(error)), collected.entries.length, []);
+      }
     }
 
-    function setDirection(direction) {
-      state.direction = direction;
-      const isCpa = direction === "cpa-to-sub";
-      els.dirCpaToSub.classList.toggle("active", isCpa);
-      els.dirSubToCpa.classList.toggle("active", !isCpa);
-      els.dirCpaToSub.setAttribute("aria-selected", String(isCpa));
-      els.dirSubToCpa.setAttribute("aria-selected", String(!isCpa));
-      els.inputTitle.textContent = isCpa ? "输入 CPA auth JSON" : "输入 sub2api 导入包";
-      els.inputHint.textContent = isCpa
-        ? "支持单个对象、数组、NDJSON、连续粘贴多个 JSON 对象，也支持多选 .json 文件。"
-        : "支持 sub2api-data 导入包、accounts 数组或单个 account 对象。";
-      els.outputTitle.textContent = isCpa ? "sub2api 导入包" : "CPA auth 列表";
-      els.outputHint.textContent = isCpa
-        ? "输出为 sub2api 前端导入弹窗读取的 DataPayload 文件。"
-        : "CPA 原生按每账号一个 JSON 文件管理；下载会生成可批量上传的 ZIP。";
-      els.sourceInput.placeholder = isCpa
-        ? '{"type":"codex","email":"me@example.com","access_token":"...","refresh_token":"...","expired":"2099-01-01T00:00:00Z"}'
-        : '{"data":{"type":"sub2api-data","version":1,"accounts":[{"name":"me@example.com","platform":"openai","type":"oauth","credentials":{"access_token":"..."}}],"proxies":[]}}';
-      convert();
+    async function generateAgentIdentity() {
+      const profile = state.profile;
+      if (!profile || profile.engine !== "openai" || els.outputMode.value !== "to-agent-identity") return;
+      const detail = profile.modeDetails["to-agent-identity"];
+      if (detail?.level !== "online" || state.agentGenerating) return;
+
+      state.agentGenerating = true;
+      els.generateAgentBtn.disabled = true;
+      els.generateAgentBtn.textContent = "注册中…";
+      els.outputHint.textContent = "正在逐个生成本地 Ed25519 密钥并注册 Runtime，请勿关闭页面。";
+      try {
+        const output = await CVT_AGENT_IDENTITY.create(profile.openai.records);
+        if (state.profile !== profile) return;
+        renderResult(adaptOpenAIResult({ ...profile.openai, output }), profile.openai.records.length, []);
+        showToast("Agent Identity auth.json 已生成");
+      } catch (error) {
+        if (state.profile === profile) {
+          renderResult(emptyResult(error instanceof Error ? error.message : String(error)), profile.openai.records.length, []);
+        }
+      } finally {
+        state.agentGenerating = false;
+        els.generateAgentBtn.textContent = "注册并生成";
+        if (state.profile === profile) setOutputModes(profile);
+      }
     }
 
     async function loadFiles(files) {
@@ -2062,13 +2304,28 @@
       }
     }
 
+    async function pasteInput() {
+      try {
+        const text = await navigator.clipboard.readText();
+        if (!text.trim()) return showToast("剪贴板为空");
+        els.sourceInput.value = text;
+        state.files = [];
+        renderFileList();
+        convert();
+        showToast("已从剪贴板导入");
+      } catch (_) {
+        showToast("无法读取剪贴板，请直接粘贴");
+      }
+    }
+
     function downloadOutput() {
       if (!state.lastOutput) return;
       if (state.lastDownloadKind === "zip") {
         downloadZipFiles(state.lastCPAFiles, state.lastFileName);
         return;
       }
-      const blob = new Blob([state.lastOutput + "\n"], { type: "application/json;charset=utf-8" });
+      const parts = state.lastDownloadKind === "blob" ? state.lastParts : [state.lastOutput + "\n"];
+      const blob = new Blob(parts, { type: state.lastMime });
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
       link.href = url;
@@ -2215,16 +2472,17 @@
       return (crc ^ 0xffffffff) >>> 0;
     }
 
-    els.dirCpaToSub.addEventListener("click", () => setDirection("cpa-to-sub"));
-    els.dirSubToCpa.addEventListener("click", () => setDirection("sub-to-cpa"));
     els.sourceInput.addEventListener("input", debouncedConvert);
+    els.outputMode.addEventListener("change", convert);
     els.prettyJson.addEventListener("change", convert);
+    els.generateAgentBtn.addEventListener("click", generateAgentIdentity);
     els.sampleBtn.addEventListener("click", () => {
-      els.sourceInput.value = state.direction === "cpa-to-sub" ? cpaSample : subSample;
+      els.sourceInput.value = JSON.stringify(JSON.parse(cpaSample)[0], null, 2);
       state.files = [];
       renderFileList();
       convert();
     });
+    els.pasteBtn.addEventListener("click", pasteInput);
     els.clearBtn.addEventListener("click", () => {
       els.sourceInput.value = "";
       state.files = [];
@@ -2250,7 +2508,7 @@
       });
     }
     els.dropzone.addEventListener("drop", (event) => {
-      const files = Array.from(event.dataTransfer.files || []).filter((file) => file.name.toLowerCase().endsWith(".json"));
+      const files = Array.from(event.dataTransfer.files || []).filter((file) => /\.(json|jsonl|txt)$/i.test(file.name));
       loadFiles(files);
     });
 

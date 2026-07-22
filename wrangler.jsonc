@@ -1,12 +1,15 @@
 {
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "cvt",
+  "main": "src/index.js",
   "compatibility_date": "2026-05-09",
   "routes": [
     { "pattern": "cvt.caoo.kdns.fr", "custom_domain": true }
   ],
   "assets": {
     "directory": "./public",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"],
     "not_found_handling": "single-page-application"
   }
 }

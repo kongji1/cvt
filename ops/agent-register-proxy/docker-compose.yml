@@ -1,0 +1,23 @@
+services:
+  agent-register-proxy:
+    build: .
+    image: cvt-agent-register-proxy:local
+    container_name: cvt-agent-register-proxy
+    restart: unless-stopped
+    environment:
+      AGENT_REGISTER_PROXY_SECRET: ${AGENT_REGISTER_PROXY_SECRET:?required}
+    ports:
+      - "127.0.0.1:18081:8080"
+    read_only: true
+    tmpfs:
+      - /tmp:size=8m,mode=1777
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s=socket.create_connection(('127.0.0.1',8080),2); s.close()"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s

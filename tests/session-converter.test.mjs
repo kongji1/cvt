@@ -3,13 +3,13 @@ import { webcrypto } from "node:crypto";
 import { readFileSync } from "node:fs";
 import vm from "node:vm";
 
-const html = readFileSync(new URL("../public/session/index.html", import.meta.url), "utf8");
-const script = html.match(/<script>\s*([\s\S]*?)\s*<\/script>\s*<\/body>/)?.[1];
-assert.ok(script, "expected one inline page script");
-assert.match(html, /OpenAI \/ ChatGPT 凭证互转中心/);
-assert.match(html, /id_token 是已签名 JWT/);
-assert.match(html, /id="skipped"/);
-assert.doesNotMatch(html, /buildCompatibilityIdToken|ensureIdTokenClaims|local_compat_signature/);
+const html = readFileSync(new URL("../public/index.html", import.meta.url), "utf8");
+const script = readFileSync(new URL("../public/openai-converter.js", import.meta.url), "utf8");
+assert.match(html, /id="detectedBadge"/);
+assert.match(html, /id="outputMode"/);
+assert.match(html, /openai-converter\.js/);
+assert.doesNotMatch(html, /自用中转站|瑞维亚AI|BuyCodekeyAPI|console\.buycodekey\.com|code\.revia\.top/);
+assert.doesNotMatch(script, /buildCompatibilityIdToken|ensureIdTokenClaims|local_compat_signature/);
 
 const elements = new Map();
 function element(id = "") {
@@ -44,7 +44,8 @@ const context = {
   setTimeout,
 };
 vm.createContext(context);
-vm.runInContext(`${script}\nglobalThis.__convertText = convertText; globalThis.__importSessionFromClipboard = importSessionFromClipboard;`, context, { filename: "public/session/index.html" });
+vm.runInContext(script, context, { filename: "public/openai-converter.js" });
+context.__convertText = context.CVT_OPENAI.convert;
 
 function jwt(payload) {
   return `${Buffer.from('{"alg":"none"}').toString("base64url")}.${Buffer.from(JSON.stringify(payload)).toString("base64url")}.sig`;
@@ -197,11 +198,57 @@ const cardResult = context.__convertText(cardText, "to-sub", now);
 assert.equal(cardResult.shape, "\u5361\u5bc6\u5bfc\u51fa TXT");
 assert.equal(JSON.parse(cardResult.output.text).accounts.length, 2);
 
-getElement("mode").value = "to-sub";
-clipboardText = firstAtOnly;
-await context.__importSessionFromClipboard();
-assert.equal(getElement("src").value, firstAtOnly);
-assert.equal(JSON.parse(getElement("out").textContent).accounts[0].name, "first@example.com");
-assert.match(getElement("msg").textContent, /剪贴板/);
+const capability = context.CVT_OPENAI.supportedModes(context.CVT_OPENAI.parse(sessionInput).records, now);
+assert.deepEqual(Array.from(capability.modes), [
+  "to-sub", "to-cpa", "to-cockpit", "to-9router", "to-codex", "to-axonhub", "to-codex-manager", "to-agent-identity", "normalize"
+]);
+assert.equal(capability.details["to-agent-identity"].level, "online");
+
+const existingIdentityInput = JSON.stringify({
+  auth_mode: "agent_identity",
+  agent_identity: {
+    agent_runtime_id: "runtime-existing",
+    agent_private_key: "PKCS8-BASE64",
+    account_id: "account-existing",
+    chatgpt_user_id: "user-existing",
+    email: "identity@example.com",
+    plan_type: "plus",
+  },
+});
+const identityParsed = context.CVT_OPENAI.parse(existingIdentityInput);
+assert.match(identityParsed.shape, /Agent Identity auth\.json/);
+assert.deepEqual(Array.from(context.CVT_OPENAI.supportedModes(identityParsed.records, now).modes), ["to-sub", "to-agent-identity", "normalize"]);
+const identitySub = JSON.parse(context.__convertText(existingIdentityInput, "to-sub", now).output.text);
+assert.equal(identitySub.accounts[0].credentials.auth_mode, "agentIdentity");
+assert.equal(identitySub.accounts[0].credentials.agent_private_key, "PKCS8-BASE64");
+assert.equal(identitySub.accounts[0].credentials.chatgpt_account_id, "account-existing");
+const identityAuth = JSON.parse(context.__convertText(JSON.stringify(identitySub), "to-agent-identity", now).output.text);
+assert.equal(identityAuth.agent_identity.agent_runtime_id, "runtime-existing");
+assert.equal(identityAuth.agent_identity.agent_private_key, "PKCS8-BASE64");
+
+const expiredInput = JSON.stringify({
+  type: "codex",
+  access_token: accessToken("expired@example.com", "account-expired", "user-expired", 1),
+});
+assert.equal(context.CVT_OPENAI.supportedModes(context.CVT_OPENAI.parse(expiredInput).records, now).modes.includes("to-agent-identity"), false);
+
+const preservedInput = JSON.stringify({
+  type: "codex",
+  email: "preserved@example.com",
+  access_token: accessToken("preserved@example.com", "account-preserved", "user-preserved"),
+  refresh_token: "refresh-preserved",
+  id_token: "id-preserved",
+  subscription_expires_at: "2099-01-01T00:00:00Z",
+  organization_id: "org-preserved",
+  chatgpt_account_is_fedramp: true,
+  openai_auth_mode: "chatgpt",
+  token_type: "Bearer",
+  scope: "openid profile",
+});
+const preservedCredentials = JSON.parse(context.__convertText(preservedInput, "to-sub", now).output.text).accounts[0].credentials;
+for (const field of ["subscription_expires_at", "organization_id", "openai_auth_mode", "token_type", "scope"]) {
+  assert.ok(preservedCredentials[field], `${field} must survive CPA -> sub2api`);
+}
+assert.equal(preservedCredentials.chatgpt_account_is_fedramp, true);
 
 console.log("session converter compatibility checks passed");
