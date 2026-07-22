@@ -76,6 +76,37 @@
       padding: 28px 0 36px;
     }
 
+    .tool-nav {
+      display: inline-flex;
+      gap: 4px;
+      margin-bottom: 18px;
+      padding: 4px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.82);
+      box-shadow: 0 8px 24px rgba(29, 46, 58, 0.07);
+    }
+
+    .tool-nav a {
+      padding: 8px 12px;
+      border-radius: 7px;
+      color: var(--muted);
+      font-size: 14px;
+      font-weight: 700;
+      text-decoration: none;
+    }
+
+    .tool-nav a:hover,
+    .tool-nav a:focus-visible {
+      color: var(--accent-ink);
+      background: var(--surface-soft);
+    }
+
+    .tool-nav a.active {
+      color: #ffffff;
+      background: var(--accent);
+    }
+
     .topbar {
       padding: 4px 0 18px;
     }
@@ -835,6 +866,11 @@
 </head>
 <body>
   <main class="shell">
+    <nav class="tool-nav" aria-label="转换器导航">
+      <a class="active" href="/" aria-current="page">CPA / sub2api</a>
+      <a href="/session/">ChatGPT Session</a>
+    </nav>
+
     <header class="topbar">
       <div class="topbar-copy">
         <p class="eyebrow">CLIProxyAPI / sub2api</p>
