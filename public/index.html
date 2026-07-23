@@ -3,7 +3,31 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="在浏览器本地安全转换 CPA、sub2api、ChatGPT Session、Codex 与 OpenAI 生态凭证，支持自动识别、批量预览和多格式导出。">
+  <meta name="theme-color" content="#f7f7f5" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#10110f" media="(prefers-color-scheme: dark)">
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="zh_CN">
+  <meta property="og:title" content="凭证格式互转中心">
+  <meta property="og:description" content="CPA / sub2api / OpenAI ecosystem 凭证自动识别与安全互转。">
+  <meta property="og:url" content="https://cvt.caoo.kdns.fr/">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="凭证格式互转中心">
+  <meta name="twitter:description" content="在浏览器本地完成多种凭证格式的自动识别、预览与导出。">
+  <link rel="canonical" href="https://cvt.caoo.kdns.fr/">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%230e6654'/%3E%3Cpath d='M18 22h28M18 32h18M18 42h28' stroke='white' stroke-width='5' stroke-linecap='round'/%3E%3C/svg%3E">
   <title>凭证格式互转中心</title>
+  <script id="theme-init">
+    (() => {
+      try {
+        const saved = localStorage.getItem("cvt-theme");
+        const theme = saved === "light" || saved === "dark"
+          ? saved
+          : matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+        document.documentElement.dataset.theme = theme;
+      } catch (_) {}
+    })();
+  </script>
   <style>
     :root {
       color-scheme: light;
@@ -877,14 +901,43 @@
       }
     }
   </style>
+  <link rel="stylesheet" href="/ui.css">
 </head>
 <body>
-  <main class="shell">
+  <a class="skip-link" href="#converter" data-i18n="skip">跳到转换工具</a>
+  <main id="converter" class="shell">
+    <nav class="site-nav" aria-label="主导航">
+      <a class="brand" href="#converter" aria-label="凭证格式互转中心首页">
+        <span class="brand-mark" aria-hidden="true">CVT</span>
+        <span class="brand-copy">
+          <span data-i18n="brand">凭证互转</span>
+          <small>Local-first converter</small>
+        </span>
+      </a>
+      <div class="nav-links">
+        <a href="#workspace" data-i18n="navConvert">转换</a>
+        <a href="#formatGuide" data-i18n="navGuide">格式说明</a>
+        <a href="#faq" data-i18n="navFaq">常见问题</a>
+      </div>
+      <div class="nav-actions">
+        <button id="historyBtn" class="nav-btn" type="button" aria-controls="historyDrawer" aria-expanded="false">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>
+          <span class="nav-label" data-i18n="history">历史记录</span>
+        </button>
+        <button id="langBtn" class="nav-btn" type="button" aria-label="Switch language" title="Switch language">
+          <span id="langLabel">EN</span>
+        </button>
+        <button id="themeBtn" class="nav-btn" type="button" aria-label="切换深浅色" title="切换深浅色">
+          <svg id="themeIconSun" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>
+          <svg id="themeIconMoon" viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true" hidden><path d="M21 12.8A9 9 0 1 1 11.2 3 7 7 0 0 0 21 12.8Z"/></svg>
+        </button>
+      </div>
+    </nav>
     <header class="topbar">
       <div class="topbar-copy">
         <p class="eyebrow">CPA / sub2api / OpenAI ecosystem</p>
-        <h1>凭证格式互转中心</h1>
-        <p class="summary">粘贴或导入凭证后自动识别输入格式，只列出当前数据真正支持的输出格式。CPA Codex、ChatGPT Session、sub2api OpenAI 与 Codex 工具链在同一页互转；其他 CPA 供应商也在这里转换。</p>
+        <h1 data-i18n="heroTitle">凭证格式互转中心</h1>
+        <p class="summary" data-i18n="heroSummary">粘贴或导入凭证后自动识别输入格式，只列出当前数据真正支持的输出格式。CPA Codex、ChatGPT Session、sub2api OpenAI 与 Codex 工具链在同一页互转；其他 CPA 供应商也在这里转换。</p>
       </div>
       <aside class="source-note" aria-label="源码版本">
         <div class="source-note-header">
@@ -918,28 +971,29 @@
       </aside>
     </header>
 
-    <section class="workspace" aria-label="转换工作区">
+    <section id="workspace" class="workspace" aria-label="转换工作区">
       <div class="panel">
         <div class="panel-header">
           <div class="panel-title">
-            <h2 id="inputTitle">输入凭证数据</h2>
-            <p id="inputHint">支持 JSON、JSONL、连续 JSON、卡密导出 TXT 和多文件；输入后自动识别。</p>
+            <h2 id="inputTitle" data-i18n="inputTitle">输入凭证数据</h2>
+            <p id="inputHint" data-i18n="inputHint">支持 JSON、JSONL、连续 JSON、卡密导出 TXT 和多文件；输入后自动识别。</p>
           </div>
           <span id="detectedBadge" class="detected-badge" aria-live="polite">等待识别</span>
         </div>
 
+        <div id="processingRail" class="processing-rail" aria-hidden="true"></div>
         <div class="input-body">
           <div class="toolbar">
             <button id="sampleBtn" class="btn" type="button" title="载入示例">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5z"/><path d="M14 2v6h6"/><path d="M8 13h8"/><path d="M8 17h5"/><path d="M8 9h2"/></svg>
-              载入示例
+              <span data-i18n="sample">载入示例</span>
             </button>
             <button id="clearBtn" class="btn ghost" type="button" title="清空输入">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-              清空
+              <span data-i18n="clear">清空</span>
             </button>
-            <button id="pasteBtn" class="btn ghost" type="button" title="从剪贴板读取凭证">从剪贴板</button>
-            <a class="btn ghost" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer">打开 ChatGPT Session</a>
+            <button id="pasteBtn" class="btn ghost" type="button" title="从剪贴板读取凭证" data-i18n="paste">从剪贴板</button>
+            <a class="btn ghost" href="https://chatgpt.com/api/auth/session" target="_blank" rel="noopener noreferrer" data-i18n="openSession">打开 ChatGPT Session</a>
           </div>
 
           <label id="dropzone" class="dropzone">
@@ -947,8 +1001,8 @@
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
             </span>
             <span class="drop-copy">
-              <strong>选择或拖入 JSON 文件</strong>
-              <span>多文件会合并转换；文件只在当前浏览器会话中读取。</span>
+              <strong data-i18n="dropTitle">选择或拖入 JSON 文件</strong>
+              <span data-i18n="dropHint">多文件会合并转换；文件只在当前浏览器会话中读取。</span>
             </span>
             <input id="fileInput" class="hidden" type="file" accept=".json,.jsonl,.txt,application/json,text/plain" multiple>
           </label>
@@ -959,7 +1013,7 @@
           <div class="options" aria-label="输出设置">
             <div class="check">
               <input id="prettyJson" type="checkbox" checked>
-              <label for="prettyJson">格式化 JSON<small>下载文件更易审阅。</small></label>
+              <label for="prettyJson"><span data-i18n="pretty">格式化 JSON</span><small data-i18n="prettyHint">下载文件更易审阅。</small></label>
             </div>
           </div>
         </div>
@@ -972,16 +1026,16 @@
             <p id="outputHint">识别输入后，只显示可以安全生成的格式。</p>
           </div>
           <div class="toolbar output-actions">
-            <label class="output-picker" for="outputMode">
+            <label class="output-picker output-picker-native" for="outputMode">
               <span>输出格式</span>
               <select id="outputMode" disabled><option>等待输入</option></select>
             </label>
             <button id="generateAgentBtn" class="btn primary hidden" type="button" title="本地生成 Ed25519 私钥并在线注册 Runtime">
-              注册并生成
+              <span data-i18n="register">注册并生成</span>
             </button>
             <button id="copyBtn" class="btn" type="button" disabled title="复制输出">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
-              复制
+              <span data-i18n="copy">复制</span>
             </button>
             <button id="downloadBtn" class="btn primary" type="button" disabled title="下载输出 JSON">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>
@@ -995,68 +1049,149 @@
         </div>
 
         <div class="output-body">
+          <section class="mode-section" aria-labelledby="modeHeading">
+            <div class="section-kicker">
+              <span id="modeHeading" data-i18n="outputFormats">可用输出格式</span>
+              <span id="modeCount">0</span>
+            </div>
+            <div id="outputModeCards" class="mode-cards" role="radiogroup" aria-label="输出格式">
+              <div class="mode-empty" data-i18n="modeEmpty">识别输入后显示可安全生成的格式</div>
+            </div>
+          </section>
+
           <div class="stats" aria-label="转换统计">
-            <div class="stat"><span>输入记录</span><strong id="statRecords">0</strong></div>
-            <div class="stat"><span>识别格式</span><strong id="statDetected">等待输入</strong></div>
-            <div class="stat"><span>可输出</span><strong id="statSupported">0</strong></div>
-            <div class="stat"><span>跳过</span><strong id="statSkipped">0</strong></div>
+            <div class="stat"><span data-i18n="statRecords">输入记录</span><strong id="statRecords">0</strong></div>
+            <div class="stat"><span data-i18n="statDetected">识别格式</span><strong id="statDetected">等待输入</strong></div>
+            <div class="stat"><span data-i18n="statSupported">可输出</span><strong id="statSupported">0</strong></div>
+            <div class="stat"><span data-i18n="statSkipped">跳过</span><strong id="statSkipped">0</strong></div>
           </div>
 
           <div class="preview-wrap">
             <div class="preview-head">
-              <span>账号预览</span>
+              <span class="preview-heading"><strong data-i18n="accountPreview">账号预览</strong><small id="previewCount">0 / 0</small></span>
               <span id="previewMeta">凭证已脱敏</span>
             </div>
-            <table class="preview-table">
-              <thead>
-                <tr>
-                  <th style="width: 28%">名称</th>
-                  <th style="width: 16%">平台</th>
-                  <th style="width: 16%">类型</th>
-                  <th style="width: 18%">过期字段</th>
-                  <th style="width: 22%">状态</th>
-                </tr>
-              </thead>
-              <tbody id="previewRows">
-                <tr><td colspan="5">等待输入。</td></tr>
-              </tbody>
-            </table>
+            <div class="preview-controls" aria-label="预览筛选">
+              <input id="previewSearch" class="compact-field" type="search" autocomplete="off" placeholder="搜索名称、平台或类型" aria-label="搜索账号">
+              <select id="previewPlatform" class="compact-field" aria-label="按平台筛选"><option value="">全部平台</option></select>
+              <select id="previewSort" class="compact-field" aria-label="预览排序">
+                <option value="default">默认排序</option>
+                <option value="name">名称 A–Z</option>
+                <option value="platform">平台 A–Z</option>
+                <option value="expires">过期时间</option>
+              </select>
+            </div>
+            <div class="preview-scroller">
+              <table class="preview-table">
+                <thead>
+                  <tr>
+                    <th style="width: 28%" data-i18n="colName">名称</th>
+                    <th style="width: 16%" data-i18n="colPlatform">平台</th>
+                    <th style="width: 16%" data-i18n="colType">类型</th>
+                    <th style="width: 18%" data-i18n="colExpiry">过期字段</th>
+                    <th style="width: 22%" data-i18n="colStatus">状态</th>
+                  </tr>
+                </thead>
+                <tbody id="previewRows">
+                  <tr><td colspan="5">等待输入。</td></tr>
+                </tbody>
+              </table>
+            </div>
           </div>
 
           <ul id="issues" class="issues" aria-live="polite"></ul>
 
-          <textarea id="outputJson" class="editor output-editor" spellcheck="false" readonly placeholder="转换成功后会在这里生成 JSON。"></textarea>
+          <div class="output-view-head">
+            <span class="section-kicker" data-i18n="outputResult">输出结果</span>
+            <div class="view-tabs" role="tablist" aria-label="输出视图">
+              <button id="previewTab" class="view-tab" type="button" role="tab" aria-selected="true" aria-controls="outputPreview" data-view="preview" data-i18n="viewPreview">结构预览</button>
+              <button id="textTab" class="view-tab" type="button" role="tab" aria-selected="false" aria-controls="outputJson" data-view="text" data-i18n="viewText">纯文本</button>
+            </div>
+          </div>
+          <pre id="outputPreview" class="output-preview" role="tabpanel" aria-labelledby="previewTab">等待转换结果。</pre>
+          <textarea id="outputJson" class="editor output-editor" spellcheck="false" readonly hidden role="tabpanel" aria-labelledby="textTab" placeholder="转换成功后会在这里生成 JSON。"></textarea>
         </div>
       </div>
     </section>
 
-    <section class="format-notes" aria-label="格式说明">
+    <section id="formatGuide" class="format-notes" aria-label="格式说明">
       <div class="format-note">
-        <strong>自动识别，不选方向</strong>
-        <span>先识别输入容器、账号格式和供应商，再列出当前数据可生成的目标格式。</span>
+        <strong data-i18n="noteAutoTitle">自动识别，不选方向</strong>
+        <span data-i18n="noteAutoText">先识别输入容器、账号格式和供应商，再列出当前数据可生成的目标格式。</span>
       </div>
       <div class="format-note">
-        <strong>CPA Codex 就是 OpenAI 凭证格式</strong>
-        <span>CPA Codex、ChatGPT Web Session、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 共用同一套 OpenAI 凭证模型。</span>
+        <strong data-i18n="noteOpenAITitle">CPA Codex 就是 OpenAI 凭证格式</strong>
+        <span data-i18n="noteOpenAIText">CPA Codex、ChatGPT Web Session、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 共用同一套 OpenAI 凭证模型。</span>
       </div>
       <div class="format-note">
-        <strong>其他 CPA 供应商也在本页</strong>
-        <span>Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA 与 sub2api 之间互转；旧 CPA Gemini 仅支持迁移到 sub2api。</span>
+        <strong data-i18n="noteProvidersTitle">其他 CPA 供应商也在本页</strong>
+        <span data-i18n="noteProvidersText">Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA 与 sub2api 之间互转；旧 CPA Gemini 仅支持迁移到 sub2api。</span>
       </div>
       <div class="format-note">
-        <strong>不是所有账号都能反向</strong>
-        <span>sub2api API Key、Agent Identity 和其他非 OAuth 账号不能还原为 CPA auth；转换器会说明原因并跳过，不会输出私钥或伪造凭证。</span>
+        <strong data-i18n="noteReverseTitle">不是所有账号都能反向</strong>
+        <span data-i18n="noteReverseText">sub2api API Key、Agent Identity 和其他非 OAuth 账号不能还原为 CPA auth；转换器会说明原因并跳过，不会输出私钥或伪造凭证。</span>
       </div>
       <div class="format-note">
-        <strong>容器与文件</strong>
-        <span>sub2api 输出是 `sub2api-data` v1；CPA 反向导出为 ZIP，每个账号一个原生 auth JSON。输入支持单个对象、数组、NDJSON、连续 JSON 和多文件。</span>
+        <strong data-i18n="noteFilesTitle">容器与文件</strong>
+        <span data-i18n="noteFilesText">sub2api 输出是 `sub2api-data` v1；CPA 反向导出为 ZIP，每个账号一个原生 auth JSON。输入支持单个对象、数组、NDJSON、连续 JSON 和多文件。</span>
       </div>
       <div class="format-note">
-        <strong>不可逆字段</strong>
-        <span>两个方向只转换账号凭证，不携带代理地址、用户名或密码。缺失 token、JWT 签名、refresh_token 或私钥都不能由格式转换凭空恢复。</span>
+        <strong data-i18n="noteLossTitle">不可逆字段</strong>
+        <span data-i18n="noteLossText">两个方向只转换账号凭证，不携带代理地址、用户名或密码。缺失 token、JWT 签名、refresh_token 或私钥都不能由格式转换凭空恢复。</span>
       </div>
     </section>
+
+    <section id="faq" class="faq-section" aria-labelledby="faqTitle">
+      <div class="section-heading">
+        <h2 id="faqTitle" data-i18n="faqTitle">常见问题</h2>
+        <p data-i18n="faqLead">格式转换遵循“能证明才生成”的原则：保留可验证字段，明确标注不可逆边界，不补造凭证。</p>
+      </div>
+      <div class="faq-list">
+        <details>
+          <summary data-i18n="faqLocalQ">凭证会上传到服务器吗？</summary>
+          <p data-i18n="faqLocalA">普通解析、识别与格式转换均在浏览器本地完成。只有 Agent Identity 的 Runtime 注册步骤需要显式点击“注册并生成”后才会发起网络请求，私钥仍只在本地生成。</p>
+        </details>
+        <details>
+          <summary data-i18n="faqReverseQ">为什么有些格式不能反向转换？</summary>
+          <p data-i18n="faqReverseA">API Key、缺失 refresh_token 的会话、Agent Identity 私钥等字段不能从另一种容器格式凭空恢复。页面只展示当前输入实际可安全生成的目标格式。</p>
+        </details>
+        <details>
+          <summary data-i18n="faqHistoryQ">历史记录是否安全？</summary>
+          <p data-i18n="faqHistoryA">历史记录默认关闭。开启前会再次确认；开启后原始输入只保存在当前浏览器的 localStorage，最多保留最近 6 条，你可以随时关闭并清空。</p>
+        </details>
+        <details>
+          <summary data-i18n="faqFilesQ">支持哪些文件和容器？</summary>
+          <p data-i18n="faqFilesA">支持 JSON、JSONL / NDJSON、连续 JSON、部分 TXT 导出和多文件合并。输出可能是单个 JSON、账号拆分 ZIP 或 CPA 原生 auth ZIP，具体取决于输入和目标格式。</p>
+        </details>
+      </div>
+    </section>
+
+    <footer class="site-footer">
+      <span data-i18n="privacyNote">隐私优先：历史记录默认关闭；除显式在线注册外，凭证转换在本地完成。</span>
+      <span><a href="https://github.com/kongji1/cvt" target="_blank" rel="noopener noreferrer">GitHub</a> · <span id="footerYear"></span></span>
+    </footer>
   </main>
+
+  <div id="historyBackdrop" class="history-backdrop" hidden></div>
+  <aside id="historyDrawer" class="history-drawer" aria-labelledby="historyTitle" aria-hidden="true" hidden>
+    <div class="drawer-head">
+      <div>
+        <h2 id="historyTitle" data-i18n="history">历史记录</h2>
+        <p data-i18n="historySubtitle">仅保存在当前浏览器，默认不记录原始凭证。</p>
+      </div>
+      <button id="historyCloseBtn" class="icon-btn" type="button" aria-label="关闭历史记录">×</button>
+    </div>
+    <div class="drawer-settings">
+      <div class="check">
+        <input id="historyEnabled" type="checkbox">
+        <label for="historyEnabled"><span data-i18n="historyEnable">在本机保存最近转换</span><small data-i18n="historyWarning">会保存原始输入；请勿在共享设备上开启。</small></label>
+      </div>
+    </div>
+    <div id="historyList" class="history-list" aria-live="polite"></div>
+    <div class="drawer-foot">
+      <button id="clearHistoryBtn" class="btn ghost" type="button" data-i18n="clearHistory">清空历史记录</button>
+    </div>
+  </aside>
 
   <div id="toast" class="toast" role="status" aria-live="polite"></div>
 
@@ -1117,6 +1252,29 @@
       statSkipped: document.getElementById("statSkipped"),
       previewRows: document.getElementById("previewRows"),
       previewMeta: document.getElementById("previewMeta"),
+      previewCount: document.getElementById("previewCount"),
+      previewSearch: document.getElementById("previewSearch"),
+      previewPlatform: document.getElementById("previewPlatform"),
+      previewSort: document.getElementById("previewSort"),
+      outputModeCards: document.getElementById("outputModeCards"),
+      modeCount: document.getElementById("modeCount"),
+      processingRail: document.getElementById("processingRail"),
+      outputPreview: document.getElementById("outputPreview"),
+      previewTab: document.getElementById("previewTab"),
+      textTab: document.getElementById("textTab"),
+      themeBtn: document.getElementById("themeBtn"),
+      themeIconSun: document.getElementById("themeIconSun"),
+      themeIconMoon: document.getElementById("themeIconMoon"),
+      langBtn: document.getElementById("langBtn"),
+      langLabel: document.getElementById("langLabel"),
+      historyBtn: document.getElementById("historyBtn"),
+      historyDrawer: document.getElementById("historyDrawer"),
+      historyBackdrop: document.getElementById("historyBackdrop"),
+      historyCloseBtn: document.getElementById("historyCloseBtn"),
+      historyEnabled: document.getElementById("historyEnabled"),
+      historyList: document.getElementById("historyList"),
+      clearHistoryBtn: document.getElementById("clearHistoryBtn"),
+      footerYear: document.getElementById("footerYear"),
       issues: document.getElementById("issues"),
       toast: document.getElementById("toast")
     };
@@ -1131,7 +1289,14 @@
       lastMime: "application/json;charset=utf-8",
       lastCPAFiles: [],
       lastSub2APIFiles: [],
-      agentGenerating: false
+      agentGenerating: false,
+      previews: [],
+      history: [],
+      historyEnabled: false,
+      language: "zh",
+      outputView: "preview",
+      processingTimer: 0,
+      historyTimer: 0
     };
 
     const DEFAULT_SUB2API_OAUTH_ACCOUNT_FIELDS = Object.freeze({
@@ -1234,6 +1399,466 @@
       "to-sub", "to-agent-identity", "to-cpa", "to-codex", "to-9router", "to-cockpit",
       "to-axonhub", "to-codex-manager", "normalize"
     ];
+
+    const OUTPUT_MODES_EN = Object.freeze({
+      "to-sub": "sub2api import",
+      "to-cpa": "CPA Codex / auth ZIP",
+      "to-codex": "Codex auth.json",
+      "to-9router": "9router OAuth JSON",
+      "to-cockpit": "Cockpit JSON",
+      "to-axonhub": "AxonHub auth.json",
+      "to-codex-manager": "Codex-Manager JSON",
+      "to-agent-identity": "Agent Identity auth.json",
+      normalize: "Normalized JSONL"
+    });
+
+    const I18N = Object.freeze({
+      zh: {
+        skip: "跳到转换工具", brand: "凭证互转", navConvert: "转换", navGuide: "格式说明", navFaq: "常见问题",
+        history: "历史记录", heroTitle: "凭证格式互转中心",
+        heroSummary: "粘贴或导入凭证后自动识别输入格式，只列出当前数据真正支持的输出格式。CPA Codex、ChatGPT Session、sub2api OpenAI 与 Codex 工具链在同一页互转；其他 CPA 供应商也在这里转换。",
+        inputTitle: "输入凭证数据", inputHint: "支持 JSON、JSONL、连续 JSON、卡密导出 TXT 和多文件；输入后自动识别。",
+        sample: "载入示例", clear: "清空", paste: "从剪贴板", openSession: "打开 ChatGPT Session",
+        dropTitle: "选择或拖入 JSON 文件", dropHint: "多文件会合并转换；文件只在当前浏览器会话中读取。",
+        pretty: "格式化 JSON", prettyHint: "下载文件更易审阅。", register: "注册并生成", copy: "复制",
+        statRecords: "输入记录", statDetected: "识别格式", statSupported: "可输出", statSkipped: "跳过",
+        noteAutoTitle: "自动识别，不选方向", noteAutoText: "先识别输入容器、账号格式和供应商，再列出当前数据可生成的目标格式。",
+        noteOpenAITitle: "CPA Codex 就是 OpenAI 凭证格式", noteOpenAIText: "CPA Codex、ChatGPT Web Session、sub2api OpenAI、Codex、9router、Cockpit、AxonHub、Codex-Manager 共用同一套 OpenAI 凭证模型。",
+        noteProvidersTitle: "其他 CPA 供应商也在本页", noteProvidersText: "Claude/Anthropic、Antigravity、XAI/Grok 可在 CPA 与 sub2api 之间互转；旧 CPA Gemini 仅支持迁移到 sub2api。",
+        noteReverseTitle: "不是所有账号都能反向", noteReverseText: "sub2api API Key、Agent Identity 和其他非 OAuth 账号不能还原为 CPA auth；转换器会说明原因并跳过，不会输出私钥或伪造凭证。",
+        noteFilesTitle: "容器与文件", noteFilesText: "sub2api 输出是 sub2api-data v1；CPA 反向导出为 ZIP，每个账号一个原生 auth JSON。输入支持单个对象、数组、NDJSON、连续 JSON 和多文件。",
+        noteLossTitle: "不可逆字段", noteLossText: "两个方向只转换账号凭证，不携带代理地址、用户名或密码。缺失 token、JWT 签名、refresh_token 或私钥都不能由格式转换凭空恢复。",
+        outputFormats: "可用输出格式", modeEmpty: "识别输入后显示可安全生成的格式", accountPreview: "账号预览",
+        colName: "名称", colPlatform: "平台", colType: "类型", colExpiry: "过期字段", colStatus: "状态",
+        outputResult: "输出结果", viewPreview: "结构预览", viewText: "纯文本",
+        faqTitle: "常见问题", faqLead: "格式转换遵循“能证明才生成”的原则：保留可验证字段，明确标注不可逆边界，不补造凭证。",
+        faqLocalQ: "凭证会上传到服务器吗？", faqLocalA: "普通解析、识别与格式转换均在浏览器本地完成。只有 Agent Identity 的 Runtime 注册步骤需要显式点击“注册并生成”后才会发起网络请求，私钥仍只在本地生成。",
+        faqReverseQ: "为什么有些格式不能反向转换？", faqReverseA: "API Key、缺失 refresh_token 的会话、Agent Identity 私钥等字段不能从另一种容器格式凭空恢复。页面只展示当前输入实际可安全生成的目标格式。",
+        faqHistoryQ: "历史记录是否安全？", faqHistoryA: "历史记录默认关闭。开启前会再次确认；开启后原始输入只保存在当前浏览器的 localStorage，最多保留最近 6 条，你可以随时关闭并清空。",
+        faqFilesQ: "支持哪些文件和容器？", faqFilesA: "支持 JSON、JSONL / NDJSON、连续 JSON、部分 TXT 导出和多文件合并。输出可能是单个 JSON、账号拆分 ZIP 或 CPA 原生 auth ZIP，具体取决于输入和目标格式。",
+        privacyNote: "隐私优先：历史记录默认关闭；除显式在线注册外，凭证转换在本地完成。",
+        historySubtitle: "仅保存在当前浏览器，默认不记录原始凭证。", historyEnable: "在本机保存最近转换",
+        historyWarning: "会保存原始输入；请勿在共享设备上开启。", clearHistory: "清空历史记录",
+        searchPlaceholder: "搜索名称、平台或类型", allPlatforms: "全部平台", sortDefault: "默认排序",
+        sortName: "名称 A–Z", sortPlatform: "平台 A–Z", sortExpiry: "过期时间",
+        waitInput: "等待输入。", noMatch: "没有匹配的账号。", masked: "凭证已脱敏", waitingAccount: "等待有效账号",
+        waitingOutput: "等待转换结果。", outputTruncated: "预览已截断；下载内容保持完整。",
+        historyEmpty: "尚无历史记录。启用后，最近 6 次转换可从这里快速回填。",
+        historyRestore: "回填", historyStored: "已保存到本机历史记录", historyRestored: "已回填历史记录",
+        historyCleared: "历史记录已清空", historyEnabledToast: "本机历史记录已开启", historyDisabledToast: "本机历史记录已关闭并清空",
+        historyEnableConfirm: "开启后，原始凭证输入会保存在当前浏览器的 localStorage。仅建议在私人设备上使用。确定开启吗？",
+        historyDisableConfirm: "关闭历史记录将同时删除已保存的原始输入。确定继续吗？",
+        historyClearConfirm: "确定删除当前浏览器中保存的全部转换历史吗？",
+        clearConfirm: "当前输入或文件尚未清空。确定清空全部吗？", cleared: "已清空输入",
+        copied: "已复制输出", downloaded: "下载已开始", processing: "识别中…",
+        levelComplete: "完整转换", levelOnline: "需显式在线注册", levelDegraded: "部分字段受限", levelSensitive: "包含本地私钥",
+        statusImport: "可导入", statusExport: "可导出", recordsShown: "显示 {shown} / {total}", title: "凭证格式互转中心"
+      },
+      en: {
+        skip: "Skip to converter", brand: "Credential CVT", navConvert: "Convert", navGuide: "Format guide", navFaq: "FAQ",
+        history: "History", heroTitle: "Credential Format Converter",
+        heroSummary: "Paste or import credentials to detect the source automatically and expose only outputs that can be generated safely. CPA Codex, ChatGPT Session, sub2api OpenAI, Codex tooling, and other CPA providers are handled in one conversion workspace.",
+        inputTitle: "Credential input", inputHint: "Supports JSON, JSONL, concatenated JSON, selected TXT exports, and multiple files with automatic detection.",
+        sample: "Load sample", clear: "Clear", paste: "From clipboard", openSession: "Open ChatGPT Session",
+        dropTitle: "Choose or drop JSON files", dropHint: "Multiple files are merged for conversion and read only in this browser session.",
+        pretty: "Pretty-print JSON", prettyHint: "Makes downloaded files easier to review.", register: "Register & generate", copy: "Copy",
+        statRecords: "Input records", statDetected: "Detected", statSupported: "Outputs", statSkipped: "Skipped",
+        noteAutoTitle: "Auto-detect instead of choosing a direction", noteAutoText: "The container, account format, and provider are identified first; only targets the current data can generate are then offered.",
+        noteOpenAITitle: "CPA Codex uses the OpenAI credential model", noteOpenAIText: "CPA Codex, ChatGPT Web Session, sub2api OpenAI, Codex, 9router, Cockpit, AxonHub, and Codex-Manager share one normalized OpenAI credential model.",
+        noteProvidersTitle: "Other CPA providers are included", noteProvidersText: "Claude/Anthropic, Antigravity, and XAI/Grok convert between CPA and sub2api; legacy CPA Gemini supports migration to sub2api only.",
+        noteReverseTitle: "Not every account is reversible", noteReverseText: "sub2api API keys, Agent Identity, and other non-OAuth accounts cannot be reconstructed as CPA auth. They are explained and skipped without exposing private keys or inventing credentials.",
+        noteFilesTitle: "Containers and files", noteFilesText: "sub2api output uses sub2api-data v1. Reverse CPA export is a ZIP with one native auth JSON per account. Objects, arrays, NDJSON, concatenated JSON, and multiple files are supported.",
+        noteLossTitle: "Irreversible fields", noteLossText: "Only account credentials are converted. Proxy URLs, usernames, and passwords are not carried across, and missing tokens, JWT signatures, refresh tokens, or private keys cannot be recreated.",
+        outputFormats: "Available outputs", modeEmpty: "Supported outputs appear after the input is identified", accountPreview: "Account preview",
+        colName: "Name", colPlatform: "Platform", colType: "Type", colExpiry: "Expiry", colStatus: "Status",
+        outputResult: "Output", viewPreview: "Structured preview", viewText: "Plain text",
+        faqTitle: "Frequently asked questions", faqLead: "The converter only generates what the input can prove: verifiable fields are preserved, irreversible boundaries are explicit, and credentials are never invented.",
+        faqLocalQ: "Are credentials uploaded to a server?", faqLocalA: "Normal parsing, detection, and conversion run locally in your browser. Only the Agent Identity Runtime registration makes a request after you explicitly click “Register & generate”; its private key is still generated locally.",
+        faqReverseQ: "Why are some formats not reversible?", faqReverseA: "API keys, sessions without refresh tokens, and Agent Identity private keys cannot be recreated from another container. The page only offers targets that the current input can generate safely.",
+        faqHistoryQ: "Is local history safe?", faqHistoryA: "History is off by default and requires confirmation. When enabled, raw input stays in this browser's localStorage, is limited to six entries, and can be disabled and cleared at any time.",
+        faqFilesQ: "Which files and containers are supported?", faqFilesA: "JSON, JSONL / NDJSON, concatenated JSON, selected TXT exports, and multiple files are supported. Depending on the source and target, output can be one JSON file, a split ZIP, or a native CPA auth ZIP.",
+        privacyNote: "Privacy first: history is off by default, and conversion stays local except for explicit online registration.",
+        historySubtitle: "Stored only in this browser; raw credentials are not recorded by default.", historyEnable: "Save recent conversions locally",
+        historyWarning: "Raw input will be stored. Do not enable this on a shared device.", clearHistory: "Clear history",
+        searchPlaceholder: "Search name, platform, or type", allPlatforms: "All platforms", sortDefault: "Default order",
+        sortName: "Name A–Z", sortPlatform: "Platform A–Z", sortExpiry: "Expiry",
+        waitInput: "Waiting for input.", noMatch: "No matching accounts.", masked: "Credentials are masked", waitingAccount: "Waiting for valid accounts",
+        waitingOutput: "Waiting for conversion output.", outputTruncated: "Preview truncated; downloaded content remains complete.",
+        historyEmpty: "No history yet. Enable it to restore any of the six most recent conversions.",
+        historyRestore: "Restore", historyStored: "Saved to local history", historyRestored: "History entry restored",
+        historyCleared: "History cleared", historyEnabledToast: "Local history enabled", historyDisabledToast: "Local history disabled and cleared",
+        historyEnableConfirm: "Enabling this stores raw credential input in this browser's localStorage. Use it only on a private device. Continue?",
+        historyDisableConfirm: "Disabling history will also delete all stored raw input. Continue?",
+        historyClearConfirm: "Delete all conversion history saved in this browser?",
+        clearConfirm: "The current input or files are not empty. Clear everything?", cleared: "Input cleared",
+        copied: "Output copied", downloaded: "Download started", processing: "Detecting…",
+        levelComplete: "Complete", levelOnline: "Explicit online registration", levelDegraded: "Limited fields", levelSensitive: "Includes local private key",
+        statusImport: "Importable", statusExport: "Exportable", recordsShown: "Showing {shown} / {total}", title: "Credential Format Converter"
+      }
+    });
+
+    const HISTORY_KEY = "cvt-history-v1";
+    const HISTORY_ENABLED_KEY = "cvt-history-enabled";
+    const HISTORY_LIMIT = 6;
+    const HISTORY_MAX_CHARS = 180000;
+
+    function t(key, values = {}) {
+      const table = I18N[state.language] || I18N.zh;
+      let value = table[key] || I18N.zh[key] || key;
+      for (const [name, replacement] of Object.entries(values)) value = value.replace(`{${name}}`, replacement);
+      return value;
+    }
+
+    function storageGet(key) {
+      try { return typeof localStorage === "undefined" ? null : localStorage.getItem(key); } catch (_) { return null; }
+    }
+
+    function storageSet(key, value) {
+      try { if (typeof localStorage !== "undefined") localStorage.setItem(key, value); } catch (_) {}
+    }
+
+    function storageRemove(key) {
+      try { if (typeof localStorage !== "undefined") localStorage.removeItem(key); } catch (_) {}
+    }
+
+    function safeConfirm(message) {
+      return typeof confirm !== "function" || confirm(message);
+    }
+
+    function applyTranslations() {
+      if (typeof document.querySelectorAll === "function") {
+        for (const node of document.querySelectorAll("[data-i18n]")) {
+          const translated = t(node.getAttribute("data-i18n"));
+          if (translated) node.textContent = translated;
+        }
+      }
+      if (els.previewSearch) els.previewSearch.placeholder = t("searchPlaceholder");
+      if (els.previewPlatform?.options?.length) els.previewPlatform.options[0].textContent = t("allPlatforms");
+      if (els.previewSort?.options?.length >= 4) {
+        els.previewSort.options[0].textContent = t("sortDefault");
+        els.previewSort.options[1].textContent = t("sortName");
+        els.previewSort.options[2].textContent = t("sortPlatform");
+        els.previewSort.options[3].textContent = t("sortExpiry");
+      }
+      if (els.langLabel) els.langLabel.textContent = state.language === "zh" ? "EN" : "中";
+      if (typeof document.title === "string") document.title = t("title");
+      const root = document.documentElement;
+      if (root?.setAttribute) root.setAttribute("lang", state.language === "zh" ? "zh-CN" : "en");
+    }
+
+    function setLanguage(language, persist = true) {
+      state.language = language === "en" ? "en" : "zh";
+      if (persist) storageSet("cvt-lang", state.language);
+      applyTranslations();
+      if (state.profile) setOutputModes(state.profile);
+      if (els.downloadLabel) els.downloadLabel.textContent = state.language === "en"
+        ? state.lastDownloadKind === "zip" ? "Download ZIP" : "Download JSON"
+        : state.lastDownloadKind === "zip" ? "下载 ZIP" : "下载 JSON";
+      if (els.downloadSplitLabel) els.downloadSplitLabel.textContent = `${state.language === "en" ? "Split ZIP" : "拆分 ZIP"}${state.lastSub2APIFiles.length ? ` (${state.lastSub2APIFiles.length})` : ""}`;
+      renderPreviewRows();
+      renderOutputPreview();
+      renderHistory();
+    }
+
+    function currentTheme() {
+      return document.documentElement?.dataset?.theme === "dark" ? "dark" : "light";
+    }
+
+    function setTheme(theme, persist = true) {
+      const next = theme === "dark" ? "dark" : "light";
+      const root = document.documentElement;
+      if (root?.dataset) root.dataset.theme = next;
+      if (els.themeIconSun) els.themeIconSun.hidden = next === "dark";
+      if (els.themeIconMoon) els.themeIconMoon.hidden = next !== "dark";
+      if (els.themeBtn?.setAttribute) els.themeBtn.setAttribute("aria-label", next === "dark" ? "切换到浅色模式" : "切换到深色模式");
+      if (persist) storageSet("cvt-theme", next);
+    }
+
+    function setProcessing(active) {
+      if (!els.processingRail) return;
+      els.processingRail.classList.toggle("active", Boolean(active));
+      if (active) {
+        els.detectedBadge.textContent = t("processing");
+        els.detectedBadge.setAttribute("aria-busy", "true");
+      } else {
+        els.detectedBadge.setAttribute("aria-busy", "false");
+      }
+    }
+
+    function modeLabel(mode) {
+      return state.language === "en" ? (OUTPUT_MODES_EN[mode] || mode) : (OUTPUT_MODES[mode] || mode);
+    }
+
+    function modeLevelLabel(detail) {
+      if (detail?.level === "online") return t("levelOnline");
+      if (detail?.level === "degraded") return t("levelDegraded");
+      if (detail?.level === "sensitive") return t("levelSensitive");
+      return t("levelComplete");
+    }
+
+    function renderOutputModes(profile) {
+      if (!els.outputModeCards) return;
+      els.modeCount.textContent = String(profile?.modes?.length || 0);
+      if (!profile?.modes?.length) {
+        els.outputModeCards.innerHTML = `<div class="mode-empty">${escapeHTML(t("modeEmpty"))}</div>`;
+        return;
+      }
+      els.outputModeCards.innerHTML = profile.modes.map((mode) => {
+        const selected = els.outputMode.value === mode;
+        return `<button class="mode-card" type="button" role="radio" aria-checked="${selected}" data-mode="${escapeHTML(mode)}">
+          <strong>${escapeHTML(modeLabel(mode))}</strong>
+          <span>${escapeHTML(modeLevelLabel(profile.modeDetails[mode]))}</span>
+        </button>`;
+      }).join("");
+    }
+
+    function syncModeCards() {
+      if (typeof els.outputModeCards?.querySelectorAll !== "function") return;
+      for (const card of els.outputModeCards.querySelectorAll("[data-mode]")) {
+        card.setAttribute("aria-checked", String(card.dataset.mode === els.outputMode.value));
+      }
+    }
+
+    function maskCredentialLabel(value) {
+      const text = asString(value).trim();
+      if (!text) return "—";
+      const at = text.indexOf("@");
+      if (at > 0) {
+        const local = text.slice(0, at);
+        const domain = text.slice(at + 1);
+        const visible = local.length <= 2 ? local.slice(0, 1) : local.slice(0, 2);
+        return `${visible}${"•".repeat(Math.min(6, Math.max(2, local.length - visible.length)))}@${domain}`;
+      }
+      if (text.length <= 8) return `${text.slice(0, 2)}•••`;
+      return `${text.slice(0, 4)}••••${text.slice(-3)}`;
+    }
+
+    function statusLabel(status) {
+      if (state.language !== "en") return status;
+      if (status === "可导入") return t("statusImport");
+      if (status === "可导出") return t("statusExport");
+      return status;
+    }
+
+    function updatePreviewPlatforms() {
+      if (!els.previewPlatform) return;
+      const previous = els.previewPlatform.value;
+      const platforms = [...new Set(state.previews.map((row) => asString(row.platform)).filter(Boolean))].sort();
+      els.previewPlatform.innerHTML = `<option value="">${escapeHTML(t("allPlatforms"))}</option>${platforms.map((platform) => `<option value="${escapeHTML(platform)}">${escapeHTML(platform)}</option>`).join("")}`;
+      if (platforms.includes(previous)) els.previewPlatform.value = previous;
+    }
+
+    function renderPreviewRows() {
+      if (!els.previewRows) return;
+      const search = asString(els.previewSearch?.value).trim().toLowerCase();
+      const platform = asString(els.previewPlatform?.value);
+      const sort = asString(els.previewSort?.value) || "default";
+      let rows = state.previews.filter((row) => {
+        if (platform && row.platform !== platform) return false;
+        if (!search) return true;
+        return [row.name, row.platform, row.type, row.status].some((value) => asString(value).toLowerCase().includes(search));
+      });
+      if (sort !== "default") {
+        rows = [...rows].sort((a, b) => {
+          if (sort === "expires") return asString(a.expires).localeCompare(asString(b.expires));
+          return asString(a[sort]).localeCompare(asString(b[sort]), state.language === "zh" ? "zh-CN" : "en");
+        });
+      }
+      const visible = rows.slice(0, 200);
+      els.previewCount.textContent = `${visible.length} / ${state.previews.length}`;
+      els.previewMeta.textContent = state.previews.length ? t("masked") : t("waitingAccount");
+      if (!visible.length) {
+        els.previewRows.innerHTML = `<tr><td colspan="5">${escapeHTML(state.previews.length ? t("noMatch") : t("waitInput"))}</td></tr>`;
+        return;
+      }
+      els.previewRows.innerHTML = visible.map((row) => {
+        const statusClass = row.status === "可导入" || row.status === "可导出" ? "ok" : "warn";
+        return `<tr>
+          <td>${escapeHTML(maskCredentialLabel(row.name))}</td>
+          <td><span class="tag">${escapeHTML(row.platform)}</span></td>
+          <td>${escapeHTML(row.type)}</td>
+          <td>${escapeHTML(row.expires || "—")}</td>
+          <td><span class="tag ${statusClass}">${escapeHTML(statusLabel(row.status))}</span></td>
+        </tr>`;
+      }).join("");
+    }
+
+    function highlightJSON(text) {
+      return escapeHTML(text).replace(/(&quot;(?:\\u[a-fA-F0-9]{4}|\\[^u]|[^\\&])*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\d+(?:\.\d+)?(?:[eE][+\-]?\d+)?/g, (match, stringToken, colon, literal) => {
+        if (stringToken) return `<span class="${colon ? "json-key" : "json-string"}">${stringToken}</span>${colon || ""}`;
+        if (literal === "true" || literal === "false") return `<span class="json-boolean">${match}</span>`;
+        if (literal === "null") return `<span class="json-null">${match}</span>`;
+        return `<span class="json-number">${match}</span>`;
+      });
+    }
+
+    function renderOutputPreview() {
+      if (!els.outputPreview) return;
+      if (!state.lastOutput) {
+        els.outputPreview.textContent = t("waitingOutput");
+        return;
+      }
+      let display = state.lastOutput;
+      try { display = JSON.stringify(JSON.parse(display), null, 2); } catch (_) {}
+      const truncated = display.length > 120000;
+      if (truncated) display = `${display.slice(0, 120000)}\n\n… ${t("outputTruncated")}`;
+      els.outputPreview.innerHTML = highlightJSON(display);
+    }
+
+    function setOutputView(view) {
+      state.outputView = view === "text" ? "text" : "preview";
+      const preview = state.outputView === "preview";
+      els.outputPreview.hidden = !preview;
+      els.outputJson.hidden = preview;
+      els.previewTab.setAttribute("aria-selected", String(preview));
+      els.textTab.setAttribute("aria-selected", String(!preview));
+    }
+
+    function flashButton(button) {
+      if (!button) return;
+      button.classList.add("success");
+      setTimeout(() => button.classList.remove("success"), 900);
+    }
+
+    function openHistory() {
+      els.historyDrawer.hidden = false;
+      els.historyBackdrop.hidden = false;
+      els.historyDrawer.setAttribute("aria-hidden", "false");
+      els.historyBtn.setAttribute("aria-expanded", "true");
+      if (typeof els.historyCloseBtn.focus === "function") els.historyCloseBtn.focus();
+    }
+
+    function closeHistory() {
+      els.historyDrawer.hidden = true;
+      els.historyBackdrop.hidden = true;
+      els.historyDrawer.setAttribute("aria-hidden", "true");
+      els.historyBtn.setAttribute("aria-expanded", "false");
+    }
+
+    function loadHistory() {
+      state.historyEnabled = storageGet(HISTORY_ENABLED_KEY) === "1";
+      els.historyEnabled.checked = state.historyEnabled;
+      try {
+        const parsed = JSON.parse(storageGet(HISTORY_KEY) || "[]");
+        state.history = Array.isArray(parsed) ? parsed.slice(0, HISTORY_LIMIT) : [];
+      } catch (_) {
+        state.history = [];
+      }
+      renderHistory();
+    }
+
+    function renderHistory() {
+      if (!els.historyList) return;
+      if (!state.history.length) {
+        els.historyList.innerHTML = `<div class="history-empty">${escapeHTML(t("historyEmpty"))}</div>`;
+        return;
+      }
+      els.historyList.innerHTML = state.history.map((item, index) => {
+        const date = new Date(item.time).toLocaleString(state.language === "zh" ? "zh-CN" : "en", { dateStyle: "medium", timeStyle: "short" });
+        return `<article class="history-item">
+          <div class="history-item-head"><strong>${escapeHTML(item.label || "Credential conversion")}</strong><small>${escapeHTML(date)}</small></div>
+          <small>${escapeHTML(item.records || "0")} records · ${escapeHTML(modeLabel(item.mode || ""))}</small>
+          <button class="btn" type="button" data-history-index="${index}">${escapeHTML(t("historyRestore"))}</button>
+        </article>`;
+      }).join("");
+    }
+
+    function historyPayload() {
+      return {
+        source: els.sourceInput.value,
+        files: state.files.map((file) => ({ name: file.name, text: file.text }))
+      };
+    }
+
+    function fingerprint(text) {
+      let hash = 2166136261;
+      for (let index = 0; index < text.length; index += 1) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
+      return (hash >>> 0).toString(16);
+    }
+
+    function scheduleHistorySave() {
+      clearTimeout(state.historyTimer);
+      if (!state.historyEnabled || !state.lastOutput) return;
+      state.historyTimer = setTimeout(saveHistoryNow, 500);
+    }
+
+    function saveHistoryNow() {
+      if (!state.historyEnabled || !state.profile || !state.lastOutput) return;
+      const payload = historyPayload();
+      const serialized = JSON.stringify(payload);
+      if (serialized.length > HISTORY_MAX_CHARS) return;
+      const id = fingerprint(serialized);
+      const label = [...state.profile.labels].join(" + ") || "Credential conversion";
+      const item = {
+        id,
+        time: Date.now(),
+        label,
+        records: els.statRecords.textContent,
+        mode: els.outputMode.value,
+        payload
+      };
+      state.history = [item, ...state.history.filter((entry) => entry.id !== id)].slice(0, HISTORY_LIMIT);
+      storageSet(HISTORY_KEY, JSON.stringify(state.history));
+      renderHistory();
+    }
+
+    function restoreHistory(index) {
+      const item = state.history[index];
+      if (!item?.payload) return;
+      els.sourceInput.value = item.payload.source || "";
+      state.files = Array.isArray(item.payload.files) ? item.payload.files : [];
+      renderFileList();
+      convert();
+      if (state.profile?.modes?.includes(item.mode)) {
+        els.outputMode.value = item.mode;
+        convert();
+      }
+      closeHistory();
+      showToast(t("historyRestored"));
+    }
+
+    function toggleHistoryEnabled() {
+      if (els.historyEnabled.checked) {
+        if (!safeConfirm(t("historyEnableConfirm"))) {
+          els.historyEnabled.checked = false;
+          return;
+        }
+        state.historyEnabled = true;
+        storageSet(HISTORY_ENABLED_KEY, "1");
+        showToast(t("historyEnabledToast"));
+        scheduleHistorySave();
+        return;
+      }
+      if (!safeConfirm(t("historyDisableConfirm"))) {
+        els.historyEnabled.checked = true;
+        return;
+      }
+      state.historyEnabled = false;
+      state.history = [];
+      storageRemove(HISTORY_ENABLED_KEY);
+      storageRemove(HISTORY_KEY);
+      renderHistory();
+      showToast(t("historyDisabledToast"));
+    }
+
+    function clearHistory() {
+      if (!state.history.length) return;
+      if (!safeConfirm(t("historyClearConfirm"))) return;
+      state.history = [];
+      storageRemove(HISTORY_KEY);
+      renderHistory();
+      showToast(t("historyCleared"));
+    }
+
+    function initUI() {
+      state.language = storageGet("cvt-lang") === "en" ? "en" : "zh";
+      setTheme(currentTheme(), false);
+      applyTranslations();
+      loadHistory();
+      setOutputView("preview");
+      if (els.footerYear) els.footerYear.textContent = String(new Date().getFullYear());
+      if (document.body?.classList) document.body.classList.add("theme-ready");
+    }
 
     function debounce(fn, wait) {
       let timer = 0;
@@ -2076,7 +2701,8 @@
     }
 
     function outputModeOptionLabel(mode, detail) {
-      const base = OUTPUT_MODES[mode] || mode;
+      const base = modeLabel(mode);
+      if (state.language === "en") return `${base} — ${modeLevelLabel(detail)}`;
       if (detail?.level === "online") return `${base}（在线注册）`;
       if (detail?.level === "degraded") return `${base}（刷新受限）`;
       if (detail?.level === "sensitive") return `${base}（含私钥）`;
@@ -2090,20 +2716,25 @@
         : '<option value="">无可用输出</option>';
       if (profile.modes.includes(previous)) els.outputMode.value = previous;
       els.outputMode.disabled = !profile.modes.length;
+      renderOutputModes(profile);
 
-      const detected = [...profile.labels].join(" + ") || (profile.text.trim() ? "未识别" : "等待输入");
+      const detected = [...profile.labels].join(" + ") || (profile.text.trim() ? (state.language === "en" ? "Unrecognized" : "未识别") : (state.language === "en" ? "Waiting" : "等待输入"));
       els.detectedBadge.textContent = detected;
       els.statDetected.textContent = detected;
       els.statSupported.textContent = String(profile.modes.length);
-      const label = OUTPUT_MODES[els.outputMode.value];
+      const label = modeLabel(els.outputMode.value);
       const detail = profile.modeDetails[els.outputMode.value];
-      els.outputTitle.textContent = label || "选择输出格式";
+      els.outputTitle.textContent = label || (state.language === "en" ? "Choose an output" : "选择输出格式");
       const requiresOnlineRegistration = els.outputMode.value === "to-agent-identity" && detail?.level === "online";
       els.generateAgentBtn.classList.toggle("hidden", !requiresOnlineRegistration);
       els.generateAgentBtn.disabled = !requiresOnlineRegistration || state.agentGenerating;
-      els.outputHint.textContent = profile.modes.length
-        ? `已自动识别输入；当前可选择 ${profile.modes.length} 种输出格式。${detail?.note ? ` ${detail.note}` : ""}`
-        : profile.text.trim() ? "当前输入没有可安全生成的目标格式。" : "识别输入后，只显示可以安全生成的格式。";
+      els.outputHint.textContent = state.language === "en"
+        ? profile.modes.length
+          ? `Input detected automatically. ${profile.modes.length} safe output format${profile.modes.length === 1 ? " is" : "s are"} available.`
+          : profile.text.trim() ? "This input has no target format that can be generated safely." : "Only safe targets appear after the input is detected."
+        : profile.modes.length
+          ? `已自动识别输入；当前可选择 ${profile.modes.length} 种输出格式。${detail?.note ? ` ${detail.note}` : ""}`
+          : profile.text.trim() ? "当前输入没有可安全生成的目标格式。" : "识别输入后，只显示可以安全生成的格式。";
     }
 
     function adaptOpenAIResult(parsed) {
@@ -2156,45 +2787,36 @@
       state.lastMime = result.mime || "application/json;charset=utf-8";
       state.lastCPAFiles = result.cpaFiles || [];
       state.lastSub2APIFiles = result.sub2apiFiles || [];
+      state.previews = result.previews || [];
       els.outputJson.value = result.outputText;
       els.downloadBtn.disabled = !result.outputText;
       els.copyBtn.disabled = !result.outputText;
-      els.downloadLabel.textContent = state.lastDownloadKind === "zip" ? "下载 ZIP" : "下载 JSON";
+      els.downloadLabel.textContent = state.language === "en"
+        ? state.lastDownloadKind === "zip" ? "Download ZIP" : "Download JSON"
+        : state.lastDownloadKind === "zip" ? "下载 ZIP" : "下载 JSON";
       const splitAvailable = state.lastSub2APIFiles.length > 0;
       els.downloadSplitBtn.disabled = !splitAvailable;
       els.downloadSplitBtn.classList.toggle("hidden", !splitAvailable);
-      els.downloadSplitLabel.textContent = `拆分 ZIP${state.lastSub2APIFiles.length ? ` (${state.lastSub2APIFiles.length})` : ""}`;
+      els.downloadSplitLabel.textContent = `${state.language === "en" ? "Split ZIP" : "拆分 ZIP"}${state.lastSub2APIFiles.length ? ` (${state.lastSub2APIFiles.length})` : ""}`;
 
       els.statRecords.textContent = String(result.totalRecordsOverride ?? totalRecords);
       els.statSkipped.textContent = String(result.skipped.length + parseErrors.length);
-      els.previewMeta.textContent = result.accountCount ? "凭证已脱敏" : "等待有效账号";
-
-      if (!result.previews.length) {
-        els.previewRows.innerHTML = `<tr><td colspan="5">${totalRecords ? "没有生成可导出的账号。" : "等待输入。"}</td></tr>`;
-      } else {
-        els.previewRows.innerHTML = result.previews.slice(0, 10).map((row) => {
-          const statusClass = row.status === "可导入" || row.status === "可导出" ? "ok" : "warn";
-          return `<tr>
-            <td title="${escapeHTML(row.name)}">${escapeHTML(row.name)}</td>
-            <td><span class="tag">${escapeHTML(row.platform)}</span></td>
-            <td>${escapeHTML(row.type)}</td>
-            <td title="${escapeHTML(row.expires)}">${escapeHTML(row.expires)}</td>
-            <td><span class="tag ${statusClass}">${escapeHTML(row.status)}</span></td>
-          </tr>`;
-        }).join("");
-      }
+      updatePreviewPlatforms();
+      renderPreviewRows();
+      renderOutputPreview();
 
       const issueItems = [];
       for (const error of parseErrors) issueItems.push({ kind: "解析失败", ...error });
       for (const skipped of result.skipped) issueItems.push({ kind: "已跳过", ...skipped });
       for (const issue of result.issues) issueItems.push({ kind: "注意", ...issue });
 
-      if (result.summary) els.outputHint.textContent = result.summary;
+      if (result.summary && state.language === "zh") els.outputHint.textContent = result.summary;
 
       els.issues.innerHTML = issueItems.slice(0, 8).map((item) => {
         const tagClass = item.kind === "解析失败" ? "danger" : item.kind === "已跳过" ? "warn" : "";
         return `<li><span class="tag ${tagClass}">${escapeHTML(item.kind)}</span><span><strong>${escapeHTML(item.source || "输入")}</strong> ${escapeHTML(item.reason || "")}</span></li>`;
       }).join("");
+      scheduleHistorySave();
     }
 
     function escapeHTML(value) {
@@ -2207,42 +2829,49 @@
     }
 
     function convert() {
-      const collected = collectEntries();
-      const profile = inspectInput(collected);
-      state.profile = profile;
-      setOutputModes(profile);
-      if (!profile.text.trim()) {
-        renderResult(emptyResult(), 0, []);
-        return;
-      }
-      if (!profile.modes.length) {
-        renderResult(emptyResult("无法识别输入，或输入格式没有可安全生成的目标格式。"), collected.entries.length, collected.errors);
-        return;
-      }
-
+      setProcessing(true);
       try {
-        const mode = els.outputMode.value;
-        const modeDetail = profile.modeDetails[mode];
-        if (profile.engine === "openai" && mode === "to-agent-identity" && modeDetail?.level === "online") {
-          const prepared = adaptOpenAIResult({
-            ...profile.openai,
-            output: {
-              text: "",
-              name: "auth.json",
-              mime: "application/json;charset=utf-8",
-              parts: [],
-              summary: "已完成 JWT 与必要 claims 校验。点击“注册并生成”后，浏览器才会本地生成 Ed25519 私钥并注册 Runtime；私钥不会发送到服务端。"
-            }
-          });
-          renderResult(prepared, profile.openai.records.length, []);
+        const collected = collectEntries();
+        const profile = inspectInput(collected);
+        state.profile = profile;
+        setOutputModes(profile);
+        if (!profile.text.trim()) {
+          renderResult(emptyResult(), 0, []);
           return;
         }
-        const result = profile.engine === "openai"
-          ? adaptOpenAIResult(CVT_OPENAI.convert(profile.openaiText, mode))
-          : mode === "to-sub" ? buildSub2API(collected.entries) : buildCPA(collected.entries);
-        renderResult(result, profile.openai?.records.length || collected.entries.length, profile.engine === "openai" ? [] : collected.errors);
-      } catch (error) {
-        renderResult(emptyResult(error instanceof Error ? error.message : String(error)), collected.entries.length, []);
+        if (!profile.modes.length) {
+          renderResult(emptyResult(state.language === "en" ? "The input is unrecognized or has no target format that can be generated safely." : "无法识别输入，或输入格式没有可安全生成的目标格式。"), collected.entries.length, collected.errors);
+          return;
+        }
+
+        try {
+          const mode = els.outputMode.value;
+          const modeDetail = profile.modeDetails[mode];
+          if (profile.engine === "openai" && mode === "to-agent-identity" && modeDetail?.level === "online") {
+            const prepared = adaptOpenAIResult({
+              ...profile.openai,
+              output: {
+                text: "",
+                name: "auth.json",
+                mime: "application/json;charset=utf-8",
+                parts: [],
+                summary: state.language === "en"
+                  ? "JWT and required claims are valid. The browser generates the Ed25519 private key and registers the Runtime only after you click Register & generate; the private key is never sent to the server."
+                  : "已完成 JWT 与必要 claims 校验。点击“注册并生成”后，浏览器才会本地生成 Ed25519 私钥并注册 Runtime；私钥不会发送到服务端。"
+              }
+            });
+            renderResult(prepared, profile.openai.records.length, []);
+            return;
+          }
+          const result = profile.engine === "openai"
+            ? adaptOpenAIResult(CVT_OPENAI.convert(profile.openaiText, mode))
+            : mode === "to-sub" ? buildSub2API(collected.entries) : buildCPA(collected.entries);
+          renderResult(result, profile.openai?.records.length || collected.entries.length, profile.engine === "openai" ? [] : collected.errors);
+        } catch (error) {
+          renderResult(emptyResult(error instanceof Error ? error.message : String(error)), collected.entries.length, []);
+        }
+      } finally {
+        setProcessing(false);
       }
     }
 
@@ -2254,20 +2883,22 @@
 
       state.agentGenerating = true;
       els.generateAgentBtn.disabled = true;
-      els.generateAgentBtn.textContent = "注册中…";
-      els.outputHint.textContent = "正在逐个生成本地 Ed25519 密钥并注册 Runtime，请勿关闭页面。";
+      els.generateAgentBtn.textContent = state.language === "en" ? "Registering…" : "注册中…";
+      els.outputHint.textContent = state.language === "en"
+        ? "Generating local Ed25519 keys and registering Runtimes one by one. Keep this page open."
+        : "正在逐个生成本地 Ed25519 密钥并注册 Runtime，请勿关闭页面。";
       try {
         const output = await CVT_AGENT_IDENTITY.create(profile.openai.records);
         if (state.profile !== profile) return;
         renderResult(adaptOpenAIResult({ ...profile.openai, output }), profile.openai.records.length, []);
-        showToast("Agent Identity auth.json 已生成");
+        showToast(state.language === "en" ? "Agent Identity auth.json generated" : "Agent Identity auth.json 已生成");
       } catch (error) {
         if (state.profile === profile) {
           renderResult(emptyResult(error instanceof Error ? error.message : String(error)), profile.openai.records.length, []);
         }
       } finally {
         state.agentGenerating = false;
-        els.generateAgentBtn.textContent = "注册并生成";
+        els.generateAgentBtn.textContent = state.language === "en" ? "Register & generate" : "注册并生成";
         if (state.profile === profile) setOutputModes(profile);
       }
     }
@@ -2281,7 +2912,7 @@
       state.files = loaded;
       renderFileList();
       convert();
-      if (loaded.length) showToast(`已读取 ${loaded.length} 个文件`);
+      if (loaded.length) showToast(state.language === "en" ? `${loaded.length} file${loaded.length === 1 ? "" : "s"} loaded` : `已读取 ${loaded.length} 个文件`);
     }
 
     function renderFileList() {
@@ -2296,25 +2927,26 @@
       if (!state.lastOutput) return;
       try {
         await navigator.clipboard.writeText(state.lastOutput);
-        showToast("已复制输出 JSON");
+        showToast(t("copied"));
       } catch (_) {
         els.outputJson.select();
         document.execCommand("copy");
-        showToast("已复制输出 JSON");
+        showToast(t("copied"));
       }
+      flashButton(els.copyBtn);
     }
 
     async function pasteInput() {
       try {
         const text = await navigator.clipboard.readText();
-        if (!text.trim()) return showToast("剪贴板为空");
+        if (!text.trim()) return showToast(state.language === "en" ? "Clipboard is empty" : "剪贴板为空");
         els.sourceInput.value = text;
         state.files = [];
         renderFileList();
         convert();
-        showToast("已从剪贴板导入");
+        showToast(state.language === "en" ? "Imported from clipboard" : "已从剪贴板导入");
       } catch (_) {
-        showToast("无法读取剪贴板，请直接粘贴");
+        showToast(state.language === "en" ? "Clipboard access failed; paste directly instead" : "无法读取剪贴板，请直接粘贴");
       }
     }
 
@@ -2322,6 +2954,7 @@
       if (!state.lastOutput) return;
       if (state.lastDownloadKind === "zip") {
         downloadZipFiles(state.lastCPAFiles, state.lastFileName);
+        flashButton(els.downloadBtn);
         return;
       }
       const parts = state.lastDownloadKind === "blob" ? state.lastParts : [state.lastOutput + "\n"];
@@ -2334,11 +2967,13 @@
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast(`已生成 ${state.lastFileName}`);
+      showToast(state.language === "en" ? `${state.lastFileName} generated` : `已生成 ${state.lastFileName}`);
+      flashButton(els.downloadBtn);
     }
 
     function downloadSplitSub2APIZip() {
       downloadZipFiles(state.lastSub2APIFiles, "sub2api-import-files.zip");
+      flashButton(els.downloadSplitBtn);
     }
 
     function downloadZipFiles(files, fileName) {
@@ -2356,7 +2991,7 @@
       link.click();
       link.remove();
       URL.revokeObjectURL(url);
-      showToast(`已生成 ${fileName}`);
+      showToast(state.language === "en" ? `${fileName} generated` : `已生成 ${fileName}`);
     }
 
     function buildZip(files) {
@@ -2472,10 +3107,39 @@
       return (crc ^ 0xffffffff) >>> 0;
     }
 
-    els.sourceInput.addEventListener("input", debouncedConvert);
-    els.outputMode.addEventListener("change", convert);
+    els.sourceInput.addEventListener("input", () => {
+      setProcessing(true);
+      debouncedConvert();
+    });
+    els.outputMode.addEventListener("change", () => {
+      syncModeCards();
+      convert();
+    });
     els.prettyJson.addEventListener("change", convert);
     els.generateAgentBtn.addEventListener("click", generateAgentIdentity);
+    els.outputModeCards.addEventListener("click", (event) => {
+      const card = typeof event.target?.closest === "function" ? event.target.closest("[data-mode]") : null;
+      if (!card || card.getAttribute("aria-checked") === "true") return;
+      els.outputMode.value = card.dataset.mode;
+      syncModeCards();
+      convert();
+    });
+    els.previewSearch.addEventListener("input", renderPreviewRows);
+    els.previewPlatform.addEventListener("change", renderPreviewRows);
+    els.previewSort.addEventListener("change", renderPreviewRows);
+    els.previewTab.addEventListener("click", () => setOutputView("preview"));
+    els.textTab.addEventListener("click", () => setOutputView("text"));
+    els.themeBtn.addEventListener("click", () => setTheme(currentTheme() === "dark" ? "light" : "dark"));
+    els.langBtn.addEventListener("click", () => setLanguage(state.language === "zh" ? "en" : "zh"));
+    els.historyBtn.addEventListener("click", openHistory);
+    els.historyCloseBtn.addEventListener("click", closeHistory);
+    els.historyBackdrop.addEventListener("click", closeHistory);
+    els.historyEnabled.addEventListener("change", toggleHistoryEnabled);
+    els.clearHistoryBtn.addEventListener("click", clearHistory);
+    els.historyList.addEventListener("click", (event) => {
+      const button = typeof event.target?.closest === "function" ? event.target.closest("[data-history-index]") : null;
+      if (button) restoreHistory(Number.parseInt(button.dataset.historyIndex, 10));
+    });
     els.sampleBtn.addEventListener("click", () => {
       els.sourceInput.value = JSON.stringify(JSON.parse(cpaSample)[0], null, 2);
       state.files = [];
@@ -2484,11 +3148,13 @@
     });
     els.pasteBtn.addEventListener("click", pasteInput);
     els.clearBtn.addEventListener("click", () => {
+      if ((els.sourceInput.value.trim() || state.files.length) && !safeConfirm(t("clearConfirm"))) return;
       els.sourceInput.value = "";
       state.files = [];
       els.fileInput.value = "";
       renderFileList();
       convert();
+      showToast(t("cleared"));
     });
     els.fileInput.addEventListener("change", (event) => loadFiles(Array.from(event.target.files || [])));
     els.copyBtn.addEventListener("click", copyOutput);
@@ -2512,6 +3178,13 @@
       loadFiles(files);
     });
 
+    if (typeof document.addEventListener === "function") {
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !els.historyDrawer.hidden) closeHistory();
+      });
+    }
+
+    initUI();
     convert();
   </script>
 </body>
